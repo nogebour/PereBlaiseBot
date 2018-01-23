@@ -140,6 +140,13 @@ class PereBlaiseBot:
             finalResult += strDisplay+'\n'
         return finalResult[:-1]
 
+    def representsInt(self,s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
     def handleInsults(self, message):
         if "blaise" in message.content.lower() and ("fuck" in message.content.lower() or "encul" in message.content.lower() or "salop" in message.content.lower() or "con" in message.content.lower() or "batard" in message.content.lower() or ("ass" in message.content.lower() and "hole" in message.content.lower())):
             gif = ["https://giphy.com/gifs/gtfo-denzel-washington-shut-the-door-l0HlMSVVw9zqmClLq", "https://giphy.com/gifs/QGzPdYCcBbbZm", "https://giphy.com/gifs/highqualitygifs-s03-e11-cee7A1jKXPDZ6", "https://giphy.com/gifs/rupaulsdragraces5-rupauls-drag-race-rupaul-season-5-26tnoxLPelh9nzzPy", "https://giphy.com/gifs/3d-c4d-cinema-4d-vII0XI8RqUVMY"]
@@ -163,7 +170,16 @@ class PereBlaiseBot:
             return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
         elif message.content.startswith('pereBlaise') or message.content.startswith('PereBlaise') or message.content.startswith('PèreBlaise') or message.content.startswith('pèreBlaise') or message.content.startswith('pB') or message.content.startswith('PB') or message.content.startswith('pb') or message.content.startswith('Pb'):
             args = message.content.split(" ")
-            if args[1] == 'hi':
+            if self.representsInt(args[1]):
+                change = int(args[1])
+                embed = discord.Embed(color=0x00ff00)
+                if change > 0:
+                    self.applyHeal(embed, message.author.id, change)
+                else:
+                    self.applyInjury(embed, message.author.id, (0-change))
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
+                
+            elif args[1] == 'hi':
                 embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 print(message.channel.id)
