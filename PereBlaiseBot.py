@@ -318,7 +318,7 @@ class PereBlaiseBot:
                 if message.author.id == MJ_ID:
                     aDbHandler = DbHandler()
                     aDbHandler.saveSnapshotGame()
-            elif args[1] == "roll" and len(args) > 2:
+            elif args[1].lower() == "roll" and len(args) > 2:
                 returnedMessage.append(DiscordMessage(message.channel, content=("<@"+message.author.id+">\n"+self.roll(''.join(args[2:])))))
             else:
                 returnedMessage.append(DiscordMessage(message.channel, content=("Hello jeune aventurier!\nJe ne te comprends pas. Va donc voir le channel <#"+HELP_CHANNEL+">")))
