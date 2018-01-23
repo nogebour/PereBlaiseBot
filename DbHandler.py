@@ -13,7 +13,6 @@ class DbHandler:
     def __init__(self, partyName = key_game):
         self.party_name = partyName
         self.connection_url = "mongodb+srv://"+os.environ['MONGO_DB_USER']+":"+os.environ['MONGO_DB_PASSWORD']+"@"+os.environ['MONGO_DB_INSTANCE']+"/"
-        print(self.connection_url)
         clientMongo = pymongo.MongoClient(self.connection_url)
         try:
             for doc in clientMongo.pereBlaise.games.find({self.key_name:self.party_name}):

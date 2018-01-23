@@ -55,12 +55,11 @@ class SettingsHandler:
         else:
             embed.add_field(value="Choix entre  'normal'|'bon'|'excellent'")
             return False
-        print ("Debug")
         players = aDbHandler.increaseEvGroup(int(heal))
         for aPlayer in players:
             embed.add_field(
                 name=("Soin enregistrée"),
-                value="Le joueur <@" + aPlayer['id'] + "> a soigné " + str(heal) + " points de vie.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
+                value="Le joueur <@" + aPlayer['id'] + "> a soigné " + str(int(heal)) + " points de vie.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
                 inline=False)
         return True
 
@@ -74,7 +73,7 @@ class SettingsHandler:
             return False
         injury = 0
         if delta > 480:
-            injury +=(1+(delta-480)/60)
+            injury += (1+(delta-480)/60)
         if (rythme == "normale"):
             injury += 0
         elif (rythme == "rapide"):
@@ -88,7 +87,7 @@ class SettingsHandler:
         for aPlayer in players:
             embed.add_field(
                 name=("Soin enregistrée"),
-                value="Le joueur <@" + aPlayer['id'] + "> a pris " + str(injury) + " points de dégats.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
+                value="Le joueur <@" + aPlayer['id'] + "> a pris " + str(int(injury)) + " points de dégats.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
                 inline=False)
         return True
 

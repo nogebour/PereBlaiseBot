@@ -1,8 +1,6 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
 import discord
-from discord.ext.commands import Bot
 import random
-import platform
 import re
 from CharacterDBHandler import CharacterDBHandler
 from DbHandler import DbHandler
@@ -17,10 +15,10 @@ class DiscordMessage:
     strMessage = None
     embedMessage = None
 
-    def __init__(self, iDiscordChannel, iStrMessage = None, iEmbedMessage = None):
+    def __init__(self, iDiscordChannel, content = None, embed = None):
         self.discordChannel = iDiscordChannel
-        self.strMessage = iStrMessage
-        self.embedMessage = iEmbedMessage
+        self.strMessage = content
+        self.embedMessage = embed
 
 class PereBlaiseBot:
     def checkArgs(self, message, nbArgs, help):
@@ -159,15 +157,15 @@ class PereBlaiseBot:
             return False, []
 
     def on_message(self, message, client):
+        returnedMessage = []
         resultInsult, gif = self.handleInsults(message)
         if resultInsult:
             return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
         elif message.content.startswith('pereBlaise') or message.content.startswith('PereBlaise') or message.content.startswith('PèreBlaise') or message.content.startswith('pèreBlaise') or message.content.startswith('pB') or message.content.startswith('PB') or message.content.startswith('pb') or message.content.startswith('Pb'):
-            returnedMessage = []
             args = message.content.split(" ")
             if args[1] == 'hi':
                 embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
-                returnedMessage.append(message.channel, embed=embed)
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 print(message.channel.id)
 
             elif args[1] == 'MJblessure':
@@ -176,9 +174,9 @@ class PereBlaiseBot:
                     user, value = self.getUserValue(message.content)
                     embed = discord.Embed(color=0x00ff00)
                     self.applyInjury(embed, user, value)
-                    returnedMessage.append(message.channel, embed=embed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 else:
-                    returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'MJsoin':
                 embedResult = self.checkArgs(message.content, 4, "Syntaxe: '!pereBlaise MJsoin <pseudo> <valeur>'")
@@ -186,9 +184,9 @@ class PereBlaiseBot:
                     user, value = self.getUserValue(message.content)
                     embed = discord.Embed(color=0x00ff00)
                     self.applyHeal(embed, user, value)
-                    returnedMessage.append(message.channel, embed=embed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 else:
-                    returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'blessure':
                 embedResult = self.checkArgs(message.content, 3, "Syntaxe: '!pereBlaise blessure <valeur>'")
@@ -196,9 +194,9 @@ class PereBlaiseBot:
                     value = self.getValue(message.content)
                     embed = discord.Embed(color=0x00ff00)
                     self.applyInjury(embed, message.author.id, value)
-                    returnedMessage.append(message.channel, embed=embed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 else:
-                    returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'soin' or args[1] == 'soins':
                 embedResult = self.checkArgs(message.content, 3, "Syntaxe: '!pereBlaise soin <valeur>'")
@@ -206,27 +204,27 @@ class PereBlaiseBot:
                     value = self.getValue(message.content)
                     embed = discord.Embed(color=0x00ff00)
                     self.applyHeal(embed, message.author.id, value)
-                    returnedMessage.append(message.channel, embed=embed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embed))
                 else:
-                    returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'liste' and (args[2] == "armes" or args[2] == "arme"):
                 testDb = CharacterDBHandler()
                 embeds = testDb.displayWeaponsCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
-                    returnedMessage.append(message.channel, embed=anEmbed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and args[2] == "stuff":
                 testDb = CharacterDBHandler()
                 embeds = testDb.displayStuffCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
-                    returnedMessage.append(message.channel, embed=anEmbed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and (args[2] == "skill" or args[2] == "skills"):
                 testDb = CharacterDBHandler()
                 embeds = testDb.displaySkillsCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
-                    returnedMessage.append(message.channel, embed=anEmbed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'info':
                 userId = message.author.id
@@ -237,17 +235,18 @@ class PereBlaiseBot:
                 testDb = CharacterDBHandler()
                 embeds = testDb.displayMinimumInfoCharacter(testDb.importCharacter(userId))
                 for anEmbed in embeds:
-                    returnedMessage.append(message.channel, embed=anEmbed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'full' and (args[2] == 'info' or args[2] == 'infos'):
                 testDb = CharacterDBHandler()
                 embeds = testDb.displayInfoCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
-                    returnedMessage.append(message.channel, embed=anEmbed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'bourse' and len(args) == 2:
                 testDb = CharacterDBHandler()
                 embed = testDb.displayMoneyInfos(testDb.importCharacter(message.author.id))
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == 'bourse':
                 embedResult = self.checkArgs(message.content, 3, "Syntaxe: '!pereBlaise bourse <or>/<argent>/<bronze>'")
@@ -260,8 +259,8 @@ class PereBlaiseBot:
                         name=("Operations comptables enregistrés"),
                         value="Le joueur "+message.author.name+" a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
                         inline=False)
-                    returnedMessage.append(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">")
-                returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
+                returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'MJbourse':
                 embedResult = self.checkArgs(message.content, 4, "Syntaxe: '!pereBlaise MJbourse <user> <or>/<argent>/<bronze>'")
@@ -274,8 +273,8 @@ class PereBlaiseBot:
                         name=("Operations comptables enregistrés"),
                         value="Le joueur <@"+user+"> a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
                         inline=False)
-                    returnedMessage.append(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">")
-                returnedMessage.append(message.channel, embed=embedResult)
+                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
+                returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == "temps" and len(args) == 2:
                 theSettings = SettingsHandler()
@@ -284,7 +283,7 @@ class PereBlaiseBot:
                     name=("Heure du jeu"),
                     value="<@"+message.author.id+"> a demandé la date et on est le "+theSettings.current_time.strftime("%d/%m/%Y")+" à "+theSettings.current_time.strftime("%H:%M")+".",
                     inline=False)
-                returnedMessage.append(message.channel, embed=embed)
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == "temps" and args[2] == "passe" and len(args) == 3:
                 theSettings = SettingsHandler()
@@ -294,14 +293,14 @@ class PereBlaiseBot:
                     name=("Durée de l'aventure"),
                     value=("Pour information l'aventure à commencé depuis "+str(aDelta)).replace("day", "jour"),
                     inline=False)
-                returnedMessage.append(message.channel, embed=embed)
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == "temps" and len(args) == 3:
                 theSettings = SettingsHandler()
                 embed = discord.Embed(color=0x00ff00)
                 if(self.makeTimeOperation(args[2], message, theSettings, embed)):
                     theSettings.saveSettings()
-                returnedMessage.append(message.channel, embed=embed)
+                returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == "temps" and len(args) == 5:
                 if(args[2] == "repos" or args[2] == "marche"):
@@ -314,13 +313,13 @@ class PereBlaiseBot:
                         elif args[2] == 'marche':
                             print("Marche")
                             theSettings.handleWalk(args[3], args[4], embed)
-                    returnedMessage.append(message.channel, embed=embed)
+                    returnedMessage.append(DiscordMessage(message.channel, embed=embed))
             elif args[1] == "save":
                 if message.author.id == MJ_ID:
                     aDbHandler = DbHandler()
                     aDbHandler.saveSnapshotGame()
             elif args[1] == "roll" and len(args) > 2:
-                returnedMessage.append(message.channel, content=("<@"+message.author.id+">\n"+self.roll(args[2])))
+                returnedMessage.append(DiscordMessage(message.channel, content=("<@"+message.author.id+">\n"+self.roll(''.join(args[2:])))))
             else:
-                returnedMessage.append(message.channel, content=("Hello jeune aventurier!\nJe ne te comprends pas. Va donc voir le channel <#"+HELP_CHANNEL+">"))
+                returnedMessage.append(DiscordMessage(message.channel, content=("Hello jeune aventurier!\nJe ne te comprends pas. Va donc voir le channel <#"+HELP_CHANNEL+">")))
         return returnedMessage
