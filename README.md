@@ -1,5 +1,5 @@
 ## Status
-
+![CI Status](https://travis-ci.org/nogebour/PereBlaiseBot.svg?branch=master)
 ## Technical Details
 - [Kanban project](https://github.com/nogebour/PereBlaiseBot/projects/1)
 - [Bug tracker](https://github.com/nogebour/PereBlaiseBot/issues)
