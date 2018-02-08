@@ -178,7 +178,7 @@ class PereBlaiseBot:
                 else:
                     self.applyInjury(embed, message.author.id, (0-change))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))
-                
+
             elif args[1] == 'hi':
                 embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))

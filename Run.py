@@ -1,6 +1,7 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
 import discord
 import platform
+import os
 from discord.ext.commands import Bot
 from PereBlaiseBot import PereBlaiseBot,DiscordMessage
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
@@ -34,4 +35,4 @@ async def on_message(message):
     for aMessage in resultMessages:
         await client.send_message(aMessage.discordChannel, embed=aMessage.embedMessage, content=aMessage.strMessage)
 
-client.run('MzgyNDY3Njc5ODc0NzExNTUz.DQNYmQ.0QJ6-j-wbo64BWYbri1vaT7Ndtw')
+client.run(os.environ['TOKEN'])
