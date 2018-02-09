@@ -1,5 +1,7 @@
 import discord
-from DbHandler import DbHandler
+
+from src.DbHandler import DbHandler
+
 
 class CharacterV2:
     userName = None

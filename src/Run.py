@@ -1,9 +1,12 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
-import discord
-import platform
 import os
+import platform
+
+import discord
 from discord.ext.commands import Bot
-from PereBlaiseBot import PereBlaiseBot,DiscordMessage
+
+from src.PereBlaiseBot import PereBlaiseBot
+
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
 client = Bot(description="Basic Bot by Habchy#1665", command_prefix="/Blaise:", pm_help = True)
 

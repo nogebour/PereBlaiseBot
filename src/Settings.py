@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
+
 from CharacterDBHandler import CharacterDBHandler
-from DbHandler import DbHandler
+
+from src.DbHandler import DbHandler
+
 
 class SettingsHandler:
     dbHandler = None

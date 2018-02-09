@@ -1,10 +1,12 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
-import discord
 import random
 import re
+
+import discord
 from CharacterDBHandler import CharacterDBHandler
-from DbHandler import DbHandler
 from Settings import SettingsHandler
+
+from src.DbHandler import DbHandler
 
 HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '386082775066869760'
