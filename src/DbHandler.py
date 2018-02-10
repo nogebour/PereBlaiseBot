@@ -26,7 +26,7 @@ class DbHandler:
     def updateGame(self):
         clientMongo = pymongo.MongoClient(self.connection_url)
         try:
-            clientMongo.pereBlaise.games.find_one_and_replace({self.key_name: self.party_name}, self.data)
+            find_one_and_replace(clientMongo, self.key_name, self.party_name, self.data)
         except ValueError:
             print("Error")
         clientMongo.close()
@@ -37,11 +37,18 @@ class DbHandler:
         clientMongo = pymongo.MongoClient(self.connection_url)
         try:
             if removeCurrentImage:
-                clientMongo.pereBlaise.games.find_one_and_replace({self.key_name: self.key_game}, self.data)
+                find_one_and_replace(clientMongo, self.key_name, self.party_name, self.data)
             else:
                 self.data.pop('_id')
-                clientMongo.pereBlaise.games.insert(self.data)
+                insert(clientMongo, self.data)
         except ValueError:
             print("Error")
         clientMongo.close()
         print(self.data)
+
+
+def insert(clientMongo, data):
+    clientMongo.pereBlaise.games.insert(data)
+
+def find_one_and_replace(clientMongo, key_name, party_name, data):
+    clientMongo.pereBlaise.games.find_one_and_replace({key_name: party_name}, data)
