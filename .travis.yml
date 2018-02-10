@@ -5,7 +5,7 @@ install:
 - pip install -r requirements.txt
 addons:
   sonarcloud:
-    organization: pereBlaiseTokenSonar
+    organization: nogebour-github
     token:
       secure: PA99TjnKDdWE4QAR0ZzHVAYfrM9+zWPrURLNoJ0Nl20g/HPJdXvJ/uuXOVtzVP2QnyzOArJijLAj86nrNn8QmWSyMzW5NWpYcZb0QdjU1iUn03OJnleRWTWiqrO2F3YZ9hTz3KMM0/XYSb7eKfexssjyzJOd94iJgPEoVKYWae1wDvIlh/yw0we069m2a6tMCLgFmQwRXNdCBkQJNQ8/VAilo6PaV64lR5BnTAx0KEix4atHR9V+6Bdib39/lktDnRoIxjrWJLaEkUmUcfAhdV2ydCRMMYUI2jxDZZxxL8oQvuPoYcpUcG6KEaqvrbT2X1Qq/UOq+GOeWXoPCtpLLzhNFglX96ERyDQh+uHlmIbyzEw3Bds2yuwh8hQYCF9NNU2T+6c95xCA/oMLztGqS25XWZxVIOjMbojfU3t3P46+iRR5YNodixm+wuW6gI643E8QM2aDmkN7t2iPOYnTomr2F6kDci27r7/4QOTAxYb4rEeni3YEOL9QT1HP/KGqQAgm+/GRJpxpLk6NTzCLUMePweUIs4XdZ5yua+GHdKozKwMncgTIC/iG7+fCPgkEtY5yIsVKSQpVJdwsI86i0duGZLiqX9fTCjrpzI3asFAXNQ9RxDm8xRjVhC4FUzDl2LpQmHmIRRpUsNdQgx71gymoYOFzHSqeMkXKoqjZVP0=
 script:
