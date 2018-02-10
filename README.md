@@ -1,5 +1,7 @@
 ## Status
 ![CI Status](https://travis-ci.org/nogebour/PereBlaiseBot.svg?branch=master)
+![SonarCloudBugs]https://sonarcloud.io/api/project_badges/measure?project=pereBlaise&metric=bugs)
+![SonarCloudCodeSmells]https://sonarcloud.io/api/project_badges/measure?project=pereBlaise&metric=code_smells)
 ## Technical Details
 - [Kanban project](https://github.com/nogebour/PereBlaiseBot/projects/1)
 - [Bug tracker](https://github.com/nogebour/PereBlaiseBot/issues)
