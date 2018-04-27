@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-import src.DbHandler
+import DbHandler
 
 import mongomock
 import datetime
