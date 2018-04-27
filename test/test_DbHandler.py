@@ -39,7 +39,8 @@ def test_retrieveGame_ko():
     assert (db_handler.errorLog[0]["error_code"] == 1)
     assert (db_handler.errorLog[0]["error_msg"] == "No Document Found")
     assert (db_handler.errorLog[0]["context"] == "Retrieve Game")
-    assert (db_handler.errorLog[0]["timestamp"] == str(datetime.datetime.now()))
+    assert (db_handler.errorLog[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 def test_updateGame_ok():
 
@@ -82,7 +83,8 @@ def test_updateGame_ko():
         assert (db_handler.errorLog[0]["error_code"] == 1)
         assert (db_handler.errorLog[0]["error_msg"] == "No Document Found")
         assert (db_handler.errorLog[0]["context"] == "Update Game")
-        assert (db_handler.errorLog[0]["timestamp"] == str(datetime.datetime.now()))
+        assert (db_handler.errorLog[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     else:
         print ("Doc found"+str(docs.count()))
         assert False

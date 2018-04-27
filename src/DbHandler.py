@@ -28,7 +28,7 @@ class DbHandler:
             self.errorLog.append({"error_code":1,
                                   "error_msg":"No Document Found",
                                   "context":"Retrieve Game",
-                                  "timestamp":str(datetime.datetime.now())})
+                                  "timestamp":datetime.datetime.now()})
             clientMongo.close()
             return
         clientMongo.close()
@@ -46,7 +46,7 @@ class DbHandler:
             self.errorLog.append({"error_code":1,
                                   "error_msg":"No Document Found",
                                   "context":"Update Game",
-                                  "timestamp":str(datetime.datetime.now())})
+                                  "timestamp":datetime.datetime.now()})
         clientMongo.close()
         print(self.data)
 
