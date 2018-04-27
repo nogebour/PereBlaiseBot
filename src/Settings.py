@@ -17,6 +17,7 @@ class SettingsHandler:
     players = []
     def __init__(self):
         self.dbHandler = DbHandler()
+        self.dbHandler.retrieveGame()
         self.data = self.dbHandler.data
         self.fillData()
 

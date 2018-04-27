@@ -12,3 +12,4 @@ pymongo==3.6.0
 sh==1.12.14
 websockets==3.4
 pytest
+mongomock==3.9.0

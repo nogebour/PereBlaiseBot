@@ -335,6 +335,7 @@ class PereBlaiseBot:
             elif args[1] == "save":
                 if message.author.id == MJ_ID:
                     aDbHandler = DbHandler()
+                    aDbHandler.retrieveGame()
                     aDbHandler.saveSnapshotGame()
             elif args[1].lower() == "roll" and len(args) > 2:
                 returnedMessage.append(DiscordMessage(message.channel, content=("<@"+message.author.id+">\n"+self.roll(''.join(args[2:])))))
