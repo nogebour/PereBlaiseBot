@@ -1,8 +1,9 @@
 language: python
 python:
 - '3.6'
-install:
+before_install:
 - pip install -r requirements.txt
+- python setup.py install
 addons:
   sonarcloud:
     organization: nogebour-github
