@@ -53,16 +53,24 @@ class DbHandler:
     def saveSnapshotGame(self, removeCurrentImage = False):
         self.data[self.key_name] = self.snapshot_name+self.key_game+datetime.datetime.now().strftime(self.snapshotPattern)
         clientMongo = self.create_mongo_db_client()
+        inserted_id = None
         try:
-            if removeCurrentImage:
-                replace_one(clientMongo, self.key_name, self.party_name, self.data)
+            print (self.data)
+            if "_id" in self.data:
+                self.data.pop("_id")
+            insert_result = insert_one(clientMongo, self.data)
+            if insert_result is None or insert_result.inserted_id is None:
+                raise ValueError()
             else:
-                self.data.pop('_id')
-                insert(clientMongo, self.data)
+                inserted_id = insert_result.inserted_id
         except ValueError:
-            print("Error")
+            print("Error %s - %s" % (str(2).zfill(4), "No Document Inserted"))
+            self.errorLog.append({"error_code": 2,
+                                  "error_msg": "No Document Inserted",
+                                  "context": "Save snapshot",
+                                  "timestamp": datetime.datetime.now()})
         clientMongo.close()
-        print(self.data)
+        return inserted_id
 
     def closeMongoDbClient(self, mongo_db_client):
         mongo_db_client.close()
@@ -70,8 +78,8 @@ class DbHandler:
     def create_mongo_db_client(self):
         return pymongo.MongoClient(self.connection_url)
 
-def insert(clientMongo, data):
-    clientMongo.pereBlaise.games.insert(data)
+def insert_one(clientMongo, data):
+    return clientMongo.pereBlaise.games.insert_one(data)
 
 def replace_one(clientMongo, key_name, party_name, data):
     return clientMongo.pereBlaise.games.replace_one({key_name: party_name}, data)
