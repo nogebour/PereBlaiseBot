@@ -12,3 +12,6 @@ addons:
 script:
 - pytest --cov=./
 - sonar-scanner
+
+after_success:
+  - codecov -t 395f6fdd-422d-4f47-a5e3-dcb9844854dc
