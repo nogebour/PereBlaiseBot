@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
-from . import CharacterDBHandler
-
+from src.CharacterDBHandler import CharacterDBHandler
 from src.DbHandler import DbHandler
 
 
