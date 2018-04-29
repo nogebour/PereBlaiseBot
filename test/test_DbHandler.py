@@ -25,7 +25,7 @@ def test_retrieveGame_ok():
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     mongo_db_client_mock.pereBlaise.games.insert({"name":"kornettoh","game":1})
-    db_handler.retrieveGame()
+    db_handler.retrieve_game()
     assert (db_handler.data["name"] == "kornettoh")
     assert (db_handler.data["game"] == 1)
     assert (len(db_handler.errorLog) == 0)
@@ -35,7 +35,7 @@ def test_retrieveGame_ko():
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
-    db_handler.retrieveGame()
+    db_handler.retrieve_game()
     assert (db_handler.data is None)
     assert (len(db_handler.errorLog) == 1)
     assert (db_handler.errorLog[0]["error_code"] == 1)
@@ -55,7 +55,7 @@ def test_updateGame_ok():
     db_handler.data = new_json
 
     #Operation to test
-    db_handler.updateGame()
+    db_handler.update_game()
 
     #Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"name": "kornettoh"})
@@ -77,7 +77,7 @@ def test_saveSnapshotGame_ok_without_id():
     db_handler.data = new_json
 
     #Operation to test
-    inserted_id = db_handler.saveSnapshotGame()
+    inserted_id = db_handler.save_snapshot_game()
 
     #Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"_id": inserted_id})
@@ -101,7 +101,7 @@ def test_saveSnapshotGame_ok():
     db_handler.data = new_json
 
     #Operation to test
-    inserted_id = db_handler.saveSnapshotGame()
+    inserted_id = db_handler.save_snapshot_game()
 
     #Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"_id": inserted_id})
@@ -124,7 +124,7 @@ def test_updateGame_ko():
     db_handler.data = new_json
 
     #Operation to test
-    db_handler.updateGame()
+    db_handler.update_game()
 
     #Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"name": "kornettoh"})
@@ -151,7 +151,7 @@ def test_saveSnapshotGame_ko():
 
 
     #Operation to test
-    inserted_id = db_handler.saveSnapshotGame()
+    inserted_id = db_handler.save_snapshot_game()
 
     #Assert
     if inserted_id is None:

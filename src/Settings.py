@@ -19,7 +19,7 @@ class SettingsHandler:
             self.dbHandler = DbHandler()
         else:
             self.dbHandler = db_handler
-        self.dbHandler.retrieveGame()
+        self.dbHandler.retrieve_game()
         self.data = self.dbHandler.data
         self.fillData()
 
@@ -38,7 +38,7 @@ class SettingsHandler:
 
     def saveSettings(self):
         self.data[self.key_settings][self.key_current_time] = self.current_time.strftime(self.pattern)
-        self.dbHandler.updateGame()
+        self.dbHandler.update_game()
 
     #'normal','bon','excellent'
     def handleRest(self, quality, length, embed):

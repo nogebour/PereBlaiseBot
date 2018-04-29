@@ -32,7 +32,7 @@ class CharacterV2:
 class CharacterDBHandler:
     def __init__(self):
         self.dbHandler = DbHandler()
-        self.dbHandler.retrieveGame()
+        self.dbHandler.retrieve_game()
         self.data = self.dbHandler.data
         self.key = ["RACE", "JOB", "EV", "EVMAX", "EA", "EAMAX", "COU", "INT", "CHA", "AD", "FO", "AT", "PRD", "DESTINY", "SKILLS", "GOLD", "SILVER", "BRONZE", "LEVEL", "SEX", "XP", "NAME", "STUFF", "WEAPONS", "PLAYER"]
         self.mapping = {self.key[0]:"Race",
@@ -229,7 +229,7 @@ class CharacterDBHandler:
             if(tempBronze < 0):
                 tempBronze = 0
             theChar["BRONZE"] = str(tempBronze)
-        self.dbHandler.updateGame()
+        self.dbHandler.update_game()
         return theChar["GOLD"], theChar["SILVER"], theChar["BRONZE"]
 
     def increaseEv(self, userName, amount):
@@ -240,7 +240,7 @@ class CharacterDBHandler:
         if(tempEv < 0):
             tempEv = 0
         theCharSheet["EV"] = str(tempEv)
-        self.dbHandler.updateGame()
+        self.dbHandler.update_game()
         return theCharSheet["EV"]
 
     def decreaseEv(self, userName, amount):
@@ -259,7 +259,7 @@ class CharacterDBHandler:
             aPlayer["EV"] = str(tempEv)
             result.append({'id': aPlayer["PLAYER"], 'remainingLife': aPlayer["EV"]})
         print('Save Changes')
-        self.dbHandler.updateGame()
+        self.dbHandler.update_game()
         return result
 
     def decreaseEvGroup(self, amount):
