@@ -23,22 +23,24 @@ theBot = PereBlaiseBot()
 #  * user count the bot is connected to
 #  * the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
+
+
 @client.event
 async def on_ready():
-	print('Logged in as '+client.user.name+' (ID:'+client.user.id+') |'
-          ' Connected to '+str(len(client.servers))+' servers |''
+    print('Logged in as '+client.user.name+' (ID:'+client.user.id+') |'
+          ' Connected to '+str(len(client.servers))+' servers |'
           ' Connected to '+str(len(set(client.get_all_members())))+' users')
-	print('--------')
-	print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__,
+    print('--------')
+    print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__,
                                                                                platform.python_version()))
-	print('--------')
-	print('Use this link to invite {}:'.format(client.user.name))
-	print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.format(client.user.id))
-	print('--------')
-	print('Support Discord Server: https://discord.gg/FNNNgqb')
-	print('Github Link: https://github.com/Habchy/BasicBot')
-	print('--------')
-	print('Created by Habchy#1665')
+    print('--------')
+    print('Use this link to invite {}:'.format(client.user.name))
+    print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.format(client.user.id))
+    print('--------')
+    print('Support Discord Server: https://discord.gg/FNNNgqb')
+    print('Github Link: https://github.com/Habchy/BasicBot')
+    print('--------')
+    print('Created by Habchy#1665')
 
 @client.event
 async def on_message(message):
