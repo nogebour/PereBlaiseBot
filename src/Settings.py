@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from CharacterDBHandler import CharacterDBHandler
+from . import CharacterDBHandler
 
 from src.DbHandler import DbHandler
 
@@ -15,8 +15,11 @@ class SettingsHandler:
     start_time = datetime.now()
     current_time = datetime.now()
     players = []
-    def __init__(self):
-        self.dbHandler = DbHandler()
+    def __init__(self, db_handler = None):
+        if db_handler is None:
+            self.dbHandler = DbHandler()
+        else:
+            self.dbHandler = db_handler
         self.dbHandler.retrieveGame()
         self.data = self.dbHandler.data
         self.fillData()
@@ -38,7 +41,7 @@ class SettingsHandler:
         self.data[self.key_settings][self.key_current_time] = self.current_time.strftime(self.pattern)
         self.dbHandler.updateGame()
 
-            #'normal','bon','excellent'
+    #'normal','bon','excellent'
     def handleRest(self, quality, length, embed):
         aDbHandler = CharacterDBHandler()
         delta = 0

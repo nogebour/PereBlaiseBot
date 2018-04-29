@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import src.DbHandler
+import src.CharacterDBHandler
 
 import mongomock
 import pymongo.results

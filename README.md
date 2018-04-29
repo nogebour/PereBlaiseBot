@@ -20,3 +20,6 @@ You can use the [editor on GitHub](https://github.com/nogebour/PereBlaiseBot/edi
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
+# Code coverage statistique 
+
+![Code coverage](https://codecov.io/gh/nogebour/PereBlaiseBot/commit/61e7a1d2aca8513034debb68ca631556b8d3a152/graphs/sunburst.svg)
