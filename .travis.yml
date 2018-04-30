@@ -12,8 +12,7 @@ addons:
 script:
 - pytest --cov=./src/
 - coverage erase
-- coverage run --source=numdifftools setup.py test
-- coverage xml -o coverage.xml
+- coverage xml
 - sonar-scanner
 
 after_success:
