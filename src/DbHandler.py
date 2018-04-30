@@ -60,7 +60,7 @@ class DbHandler:
         client_mongo = self.create_mongo_db_client()
         inserted_id = None
         try:
-            print (self.data)
+            print(self.data)
             if "_id" in self.data:
                 self.data.pop("_id")
             insert_result = insert_one(client_mongo, self.data)

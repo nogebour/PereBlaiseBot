@@ -229,3 +229,4 @@ def test_handle_walk_invalid_speed():
     assert setting.error_log[0]["error_code"] == 4
     assert setting.error_log[0]["error_msg"] == "Invalid walk speed"
     assert setting.error_log[0]["context"] == "compute_walk"
+

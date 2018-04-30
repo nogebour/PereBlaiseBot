@@ -33,7 +33,7 @@ class CharacterV2:
 class CharacterDBHandler:
     def __init__(self):
         self.dbHandler = DbHandler()
-        self.data = self.dbHandler.data
+        self.data = None
         self.key = ["RACE", "JOB", "EV", "EVMAX", "EA", "EAMAX", "COU", "INT", "CHA", "AD", "FO", "AT", "PRD", "DESTINY", "SKILLS", "GOLD", "SILVER", "BRONZE", "LEVEL", "SEX", "XP", "NAME", "STUFF", "WEAPONS", "PLAYER"]
         self.mapping = {self.key[0]:"Race",
                         self.key[1]:"Métier",
@@ -63,6 +63,7 @@ class CharacterDBHandler:
 
     def initialize(self):
         self.dbHandler.retrieve_game()
+        self.data = self.dbHandler.data
 
     def mappingCharStat(self, aKey, aChar):
         if aKey==self.key[0]:
