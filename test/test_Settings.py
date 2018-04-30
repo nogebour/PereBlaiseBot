@@ -27,6 +27,24 @@ def test_filldata_and_init_ok():
 
 def test_elpased_time():
     setting, start, current = test_filldata_and_init_ok()
-    assert ((setting.current_time - setting.start_time) ==
+    assert (setting.get_elapsed_time() ==
             (datetime.datetime.strptime(current, "%d/%m/%Y - %H:%M") -
              datetime.datetime.strptime(start, "%d/%m/%Y - %H:%M")))
+
+def test_add_time_60_minutes():
+    setting, start, current = test_filldata_and_init_ok()
+    newTime = setting.add_time(60)
+    assert (setting.current_time == newTime)
+    assert (setting.current_time.strftime("%d/%m/%Y - %H:%M") == "02/01/2018 - 03:02")
+
+def test_add_time_60000_minutes():
+    setting, start, current = test_filldata_and_init_ok()
+    newTime = setting.add_time(60000)
+    assert (setting.current_time == newTime)
+    assert (setting.current_time.strftime("%d/%m/%Y - %H:%M") == "12/02/2018 - 18:02")
+
+def test_save_settings():
+    setting, start, current = test_filldata_and_init_ok()
+    setting.add_time(60)
+    setting.save_settings()
+    assert (setting.dbHandler.data['settings']['current_time'] == "02/01/2018 - 03:02")
