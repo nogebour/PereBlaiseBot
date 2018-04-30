@@ -12,6 +12,7 @@ addons:
 script:
 - pytest --cov=./src/
 - coverage erase
+- coverage run --branch --source=src -m pytest -s --junitxml=pytests.xml
 - coverage xml
 - sonar-scanner
 
