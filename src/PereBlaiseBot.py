@@ -76,7 +76,7 @@ class PereBlaiseBot:
                 print("Not an integer")
                 return
             if delta > 0:
-                currentTime = theSettings.addTime(delta)
+                currentTime = theSettings.add_time(delta)
                 result = True
                 embed.add_field(
                     name=("Temps ajouté"),
@@ -305,7 +305,7 @@ class PereBlaiseBot:
 
             elif args[1] == "temps" and args[2] == "passe" and len(args) == 3:
                 theSettings = SettingsHandler()
-                aDelta = theSettings.getElapsedTime()
+                aDelta = theSettings.get_elapsed_time()
                 embed = discord.Embed(color=0x00ff00)
                 embed.add_field(
                     name=("Durée de l'aventure"),
@@ -317,7 +317,7 @@ class PereBlaiseBot:
                 theSettings = SettingsHandler()
                 embed = discord.Embed(color=0x00ff00)
                 if(self.makeTimeOperation(args[2], message, theSettings, embed)):
-                    theSettings.saveSettings()
+                    theSettings.save_settings()
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == "temps" and len(args) == 5:
@@ -327,10 +327,10 @@ class PereBlaiseBot:
                     if self.makeTimeOperation(args[4], message, theSettings, embed):
                         if args[2] == 'repos':
                             print("repos")
-                            theSettings.handleRest(args[3], args[4], embed)
+                            theSettings.handle_rest(args[3], args[4], embed)
                         elif args[2] == 'marche':
                             print("Marche")
-                            theSettings.handleWalk(args[3], args[4], embed)
+                            theSettings.handle_walk(args[3], args[4], embed)
                     returnedMessage.append(DiscordMessage(message.channel, embed=embed))
             elif args[1] == "save":
                 if message.author.id == MJ_ID:

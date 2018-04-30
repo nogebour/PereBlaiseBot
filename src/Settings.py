@@ -14,6 +14,7 @@ class SettingsHandler:
     start_time = datetime.now()
     current_time = datetime.now()
     players = []
+
     def __init__(self, db_handler = None):
         if db_handler is None:
             self.dbHandler = DbHandler()
@@ -21,28 +22,29 @@ class SettingsHandler:
             self.dbHandler = db_handler
         self.dbHandler.retrieve_game()
         self.data = self.dbHandler.data
-        self.fillData()
+        self.fill_data()
 
-    def fillData(self):
+    def fill_data(self):
         self.start_time = datetime.strptime(self.data[self.key_settings][self.key_start_time], self.pattern)
         self.current_time = datetime.strptime(self.data[self.key_settings][self.key_current_time], self.pattern)
         self.players = self.data[self.key_settings][self.key_players]
 
-    def getElapsedTime(self):
-        return (self.current_time - self.start_time)
+    def get_elapsed_time(self):
+        return self.current_time - self.start_time
 
-    def addTime(self, delta):
-        aTimeDelta = timedelta(minutes=delta)
-        self.current_time+=aTimeDelta
-        return  self.current_time
+    def add_time(self, delta):
+        a_time_delta = timedelta(minutes=delta)
+        self.current_time += a_time_delta
+        return self.current_time
 
-    def saveSettings(self):
+    def save_settings(self):
         self.data[self.key_settings][self.key_current_time] = self.current_time.strftime(self.pattern)
         self.dbHandler.update_game()
+        #TODO Improve result handling
 
-    #'normal','bon','excellent'
-    def handleRest(self, quality, length, embed):
-        aDbHandler = CharacterDBHandler()
+    # 'normal','bon','excellent'
+    def handle_rest(self, quality, length, embed):
+        db_handler = CharacterDBHandler()
         delta = 0
         try:
             delta = int(length)
@@ -52,25 +54,26 @@ class SettingsHandler:
         heal = 0
         if delta > 540:
             delta = 540
-        if (quality == "normal"):
+        if quality == "normal":
             heal = (delta / 240)
-        elif (quality == "bon"):
+        elif quality == "bon":
             heal = (delta / 120)
-        elif(quality == "excellent"):
+        elif quality == "excellent":
             heal = (delta / 60)
         else:
             embed.add_field(value="Choix entre  'normal'|'bon'|'excellent'")
             return False
-        players = aDbHandler.increaseEvGroup(int(heal))
-        for aPlayer in players:
+        players = db_handler.increaseEvGroup(int(heal))
+        for a_player in players:
             embed.add_field(
-                name=("Soin enregistrée"),
-                value="Le joueur <@" + aPlayer['id'] + "> a soigné " + str(int(heal)) + " points de vie.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
+                name= "Soin enregistrée",
+                value="Le joueur <@" + a_player['id'] + "> a soigné " + str(int(heal)) + " points de vie.\nIl reste " +
+                      a_player['remainingLife'] + " points de vie.",
                 inline=False)
         return True
 
-    def handleWalk(self, rythme, length, embed):
-        aDbHandler = CharacterDBHandler()
+    def handle_walk(self, rythme, length, embed):
+        db_handler = CharacterDBHandler()
         delta = 0
         try:
             delta = int(length)
@@ -80,20 +83,21 @@ class SettingsHandler:
         injury = 0
         if delta > 480:
             injury += (1+(delta-480)/60)
-        if (rythme == "normale"):
+        if rythme == "normale":
             injury += 0
-        elif (rythme == "rapide"):
+        elif rythme == "rapide":
             injury += (delta / (240)) + 1
-        elif(rythme == "barbare"):
+        elif rythme == "barbare":
             injury += (delta / (120)) + 1
         else:
-            embed.add_field(value="Choix entre  'normale'|'rapide'|'barbare'")
+            embed.add_field(value="Choix entre 'normale'|'rapide'|'barbare'")
             return False
-        players = aDbHandler.decreaseEvGroup(int(injury))
-        for aPlayer in players:
+        players = db_handler.decreaseEvGroup(int(injury))
+        for a_player in players:
             embed.add_field(
-                name=("Soin enregistrée"),
-                value="Le joueur <@" + aPlayer['id'] + "> a pris " + str(int(injury)) + " points de dégats.\nIl reste " + aPlayer['remainingLife'] + " points de vie.",
+                name= "Blessure enregistrée",
+                value="Le joueur <@" + a_player['id'] + "> a pris " + str(int(injury)) +
+                      " points de dégats.\nIl reste " + a_player['remainingLife'] + " points de vie.",
                 inline=False)
         return True
 
