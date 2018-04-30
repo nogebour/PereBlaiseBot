@@ -5,26 +5,28 @@ from src.DbHandler import DbHandler
 
 
 class SettingsHandler:
-    data = None
-    dbHandler = None
     pattern = "%d/%m/%Y - %H:%M"
     key_start_time = "start_time"
     key_current_time = "current_time"
     key_players = "players"
     key_settings = 'settings'
-    start_time = datetime.now()
-    current_time = datetime.now()
-    players = []
 
     def __init__(self):
-        self.dbHandler = DbHandler()
+        self.data = None
+        self.db_handler = None
+        self.error_log = []
+        self.start_time = datetime.now()
+        self.current_time = datetime.now()
+        self.players = []
+
+        self.db_handler = DbHandler()
 
     def initialize(self):
-        self.dbHandler.retrieve_game()
-        self.data = self.dbHandler.data
+        self.db_handler.retrieve_game()
+        self.data = self.db_handler.data
         self.fill_data()
 
-    def fill_data(self):
+    def fill_data(self):  # TODO Improve way of handling non-present date
         self.start_time = datetime.strptime(self.data[self.key_settings][self.key_start_time], self.pattern)
         self.current_time = datetime.strptime(self.data[self.key_settings][self.key_current_time], self.pattern)
         self.players = self.data[self.key_settings][self.key_players]
@@ -39,31 +41,60 @@ class SettingsHandler:
 
     def save_settings(self):
         self.data[self.key_settings][self.key_current_time] = self.current_time.strftime(self.pattern)
-        self.dbHandler.update_game()
+        self.db_handler.update_game()
         #TODO Improve result handling
 
     # 'normal','bon','excellent'
+    def compute_rest(self, quality, delta):
+        if delta > 540:
+            delta = 540
+        if quality == "normal":
+            return int(delta / 240)
+        elif quality == "bon":
+            return int(delta / 120)
+        elif quality == "excellent":
+            return int(delta / 60)
+        else:
+            self.error_log.append({"error_code": 3,
+                                   "error_msg": "Invalid Rest Quality",
+                                   "context": "compute_rest",
+                                   "timestamp": datetime.now()})
+            raise ValueError("Choix entre 'normal'|'bon'|'excellent'")
+
+    # 'normale','rapide','barbare'
+    def compute_walk(self, rythme, delta):
+        injury = 0
+        if delta > 480:
+            injury += int(1+(delta-480)/60)
+        if rythme == "normale":
+            injury += 0
+        elif rythme == "rapide":
+            injury += int(delta / 240) + 1
+        elif rythme == "barbare":
+            injury += int(delta / 120) + 1
+        else:
+            self.error_log.append({"error_code": 4,
+                                   "error_msg": "Invalid Walk Quality",
+                                   "context": "compute_walk",
+                                   "timestamp": datetime.now()})
+            raise ValueError("Choix entre 'normale'|'rapide'|'barbare'")
+        return injury
+
     def handle_rest(self, quality, length, embed):
-        db_handler = CharacterDBHandler()
-        delta = 0
+        db_handler = self.get_character_db_handler()
         try:
             delta = int(length)
         except ValueError:
             print("Not an integer")
             return False
-        heal = 0
-        if delta > 540:
-            delta = 540
-        if quality == "normal":
-            heal = (delta / 240)
-        elif quality == "bon":
-            heal = (delta / 120)
-        elif quality == "excellent":
-            heal = (delta / 60)
-        else:
-            embed.add_field(value="Choix entre  'normal'|'bon'|'excellent'")
+
+        try:
+            heal = self.compute_rest(quality, delta)
+        except ValueError as e:
+            embed.add_field(value=str(e))
             return False
-        players = db_handler.increaseEvGroup(int(heal))
+
+        players = db_handler.increaseEvGroup(heal)
         for a_player in players:
             embed.add_field(
                 name= "Soin enregistrée",
@@ -73,7 +104,7 @@ class SettingsHandler:
         return True
 
     def handle_walk(self, rythme, length, embed):
-        db_handler = CharacterDBHandler()
+        db_handler = self.get_character_db_handler()
         delta = 0
         try:
             delta = int(length)
@@ -81,18 +112,13 @@ class SettingsHandler:
             print("Not an integer")
             return False
         injury = 0
-        if delta > 480:
-            injury += (1+(delta-480)/60)
-        if rythme == "normale":
-            injury += 0
-        elif rythme == "rapide":
-            injury += (delta / (240)) + 1
-        elif rythme == "barbare":
-            injury += (delta / (120)) + 1
-        else:
-            embed.add_field(value="Choix entre 'normale'|'rapide'|'barbare'")
+        try:
+            injury = self.compute_walk(rythme, delta)
+        except ValueError as e:
+            embed.add_field(value=str(e))
             return False
-        players = db_handler.decreaseEvGroup(int(injury))
+
+        players = db_handler.decreaseEvGroup(injury)
         for a_player in players:
             embed.add_field(
                 name= "Blessure enregistrée",
@@ -101,3 +127,6 @@ class SettingsHandler:
                 inline=False)
         return True
 
+    def get_character_db_handler(self):
+        db_handler = CharacterDBHandler()
+        return db_handler

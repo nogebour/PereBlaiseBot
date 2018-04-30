@@ -85,6 +85,7 @@ class PereBlaiseBot:
 
     def applyHeal(self, embed, user, value):
         testDb = CharacterDBHandler()
+        testDb.initialize()
         remainingLife = testDb.increaseEv(user,value)
         embed.add_field(
             name=("Soin enregistrée"),
@@ -95,6 +96,7 @@ class PereBlaiseBot:
 
     def applyInjury(self, embed, user, value):
         testDb = CharacterDBHandler()
+        testDb.initialize()
         remainingLife = testDb.decreaseEv(user,value)
         embed.add_field(
             name=("Blessure enregistrée"),
@@ -227,18 +229,21 @@ class PereBlaiseBot:
 
             elif args[1] == 'liste' and (args[2] == "armes" or args[2] == "arme"):
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embeds = testDb.displayWeaponsCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and args[2] == "stuff":
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embeds = testDb.displayStuffCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and (args[2] == "skill" or args[2] == "skills"):
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embeds = testDb.displaySkillsCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
@@ -250,18 +255,21 @@ class PereBlaiseBot:
                     if tmpUserId is not None:
                         userId = tmpUserId
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embeds = testDb.displayMinimumInfoCharacter(testDb.importCharacter(userId))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'full' and (args[2] == 'info' or args[2] == 'infos'):
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embeds = testDb.displayInfoCharacter(testDb.importCharacter(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'bourse' and len(args) == 2:
                 testDb = CharacterDBHandler()
+                testDb.initialize()
                 embed = testDb.displayMoneyInfos(testDb.importCharacter(message.author.id))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
@@ -270,6 +278,7 @@ class PereBlaiseBot:
                 if embedResult is None:
                     value = self.getValueStr(message.content)
                     testDb = CharacterDBHandler()
+                    testDb.initialize()
                     gold, silver, bronze = testDb.moneyOperation(message.author.id, value)
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(
@@ -284,6 +293,7 @@ class PereBlaiseBot:
                 if embedResult is None:
                     user, value = self.getUserValueStr(message.content)
                     testDb = CharacterDBHandler()
+                    testDb.initialize()
                     gold, silver, bronze = testDb.moneyOperation(user, value)
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(

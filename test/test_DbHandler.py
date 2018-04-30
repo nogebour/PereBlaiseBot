@@ -20,66 +20,68 @@ def test_init():
     db_handler = src.DbHandler.DbHandler()
     assert (db_handler.connection_url == "mongodb+srv://test1:test2@Test3/")
 
-def test_retrieveGame_ok():
+
+def test_retrieve_game_ok():
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
-    mongo_db_client_mock.pereBlaise.games.insert({"name":"kornettoh","game":1})
+    mongo_db_client_mock.pereBlaise.games.insert({"name": "kornettoh", "game": 1})
     db_handler.retrieve_game()
     assert (db_handler.data["name"] == "kornettoh")
     assert (db_handler.data["game"] == 1)
-    assert (len(db_handler.errorLog) == 0)
+    assert (len(db_handler.error_log) == 0)
 
 
-def test_retrieveGame_ko():
+def test_retrieve_game_ko():
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     db_handler.retrieve_game()
     assert (db_handler.data is None)
-    assert (len(db_handler.errorLog) == 1)
-    assert (db_handler.errorLog[0]["error_code"] == 1)
-    assert (db_handler.errorLog[0]["error_msg"] == "No Document Found")
-    assert (db_handler.errorLog[0]["context"] == "Retrieve Game")
-    assert (db_handler.errorLog[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
+    assert (len(db_handler.error_log) == 1)
+    assert (db_handler.error_log[0]["error_code"] == 1)
+    assert (db_handler.error_log[0]["error_msg"] == "No Document Found")
+    assert (db_handler.error_log[0]["context"] == "Retrieve Game")
+    assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-def test_updateGame_ok():
 
-    #Setup
+def test_update_game_ok():
+
+    # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
-    mongo_db_client_mock.pereBlaise.games.insert({"name":"kornettoh","game":1})
-    new_json = {"name":"kornettoh","game":2}
+    mongo_db_client_mock.pereBlaise.games.insert({"name": "kornettoh", "game": 1})
+    new_json = {"name": "kornettoh", "game": 2}
     db_handler.data = new_json
 
-    #Operation to test
+    # Operation to test
     db_handler.update_game()
 
-    #Assert
+    # Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"name": "kornettoh"})
     if docs.count() is not 1:
         assert False
     else:
         assert (docs[0]["game"] == 2)
         assert (docs[0]["name"] == "kornettoh")
-        assert (len(db_handler.errorLog) == 0)
+        assert (len(db_handler.error_log) == 0)
 
 
-def test_saveSnapshotGame_ok_without_id():
+def test_save_snapshot_game_ok_without_id():
 
-    #Setup
+    # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 1}
     db_handler.data = new_json
 
-    #Operation to test
+    # Operation to test
     inserted_id = db_handler.save_snapshot_game()
 
-    #Assert
+    # Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"_id": inserted_id})
     print(mongo_db_client_mock.pereBlaise.games)
     print (docs.count())
@@ -88,79 +90,80 @@ def test_saveSnapshotGame_ok_without_id():
     else:
         assert (docs[0]["game"] == 1)
         assert (docs[0]["name"] == "snapshotkornettoh"+datetime.datetime.now().strftime("%Y%m%d_%H%M"))
-        assert (len(db_handler.errorLog) == 0)
+        assert (len(db_handler.error_log) == 0)
 
 
 def test_saveSnapshotGame_ok():
 
-    #Setup
+    # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 1, "_id": 123456789}
     db_handler.data = new_json
 
-    #Operation to test
+    # Operation to test
     inserted_id = db_handler.save_snapshot_game()
 
-    #Assert
+    # Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"_id": inserted_id})
     print(mongo_db_client_mock.pereBlaise.games)
-    print (docs.count())
+    print(docs.count())
     if docs.count() is not 1:
         assert False
     else:
         assert (docs[0]["game"] == 1)
         assert (docs[0]["name"] == "snapshotkornettoh"+datetime.datetime.now().strftime("%Y%m%d_%H%M"))
-        assert (len(db_handler.errorLog) == 0)
+        assert (len(db_handler.error_log) == 0)
 
 
-def test_updateGame_ko():
-    #Setup
+def test_update_game_ko():
+    # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
-    new_json = {"name":"kornettoh","game":2}
+    new_json = {"name": "kornettoh", "game": 2}
     db_handler.data = new_json
 
-    #Operation to test
+    # Operation to test
     db_handler.update_game()
 
-    #Assert
+    # Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"name": "kornettoh"})
-    if (docs.count() == 0):
-        assert (len(db_handler.errorLog) == 1)
-        assert (db_handler.errorLog[0]["error_code"] == 1)
-        assert (db_handler.errorLog[0]["error_msg"] == "No Document Found")
-        assert (db_handler.errorLog[0]["context"] == "Update Game")
-        assert (db_handler.errorLog[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
+    if docs.count() == 0:
+        assert (len(db_handler.error_log) == 1)
+        assert (db_handler.error_log[0]["error_code"] == 1)
+        assert (db_handler.error_log[0]["error_msg"] == "No Document Found")
+        assert (db_handler.error_log[0]["context"] == "Update Game")
+        assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print ("Doc found"+str(docs.count()))
+        print("Doc found"+str(docs.count()))
         assert False
 
-def test_saveSnapshotGame_ko():
-    #Setup
+
+def test_save_snapshot_game_ko():
+    # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
-    new_json = {"name":"kornettoh","game":2}
+    new_json = {"name": "kornettoh", "game": 2}
     db_handler.data = new_json
     insert_one_result = pymongo.results.InsertOneResult(None, True)
     src.DbHandler.insert_one = MagicMock(return_value=insert_one_result)
 
 
-    #Operation to test
+    # Operation to test
     inserted_id = db_handler.save_snapshot_game()
 
-    #Assert
+    # Assert
     if inserted_id is None:
-        assert (len(db_handler.errorLog) == 1)
-        assert (db_handler.errorLog[0]["error_code"] == 2)
-        assert (db_handler.errorLog[0]["error_msg"] == "No Document Inserted")
-        assert (db_handler.errorLog[0]["context"] == "Save snapshot")
-        assert (db_handler.errorLog[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
+        assert (len(db_handler.error_log) == 1)
+        assert (db_handler.error_log[0]["error_code"] == 2)
+        assert (db_handler.error_log[0]["error_msg"] == "No Document Inserted")
+        assert (db_handler.error_log[0]["context"] == "Save snapshot")
+        assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print ("Doc found"+inserted_id)
+        print("Doc found"+inserted_id)
         assert False

@@ -13,7 +13,7 @@ class DbHandler:
 
     def __init__(self, party_name=key_game):
         self.party_name = party_name
-        self.errorLog = []
+        self.error_log = []
         self.connection_url = "mongodb+srv://"+os.environ['MONGO_DB_USER']+\
                               ":"+os.environ['MONGO_DB_PASSWORD']+\
                               "@"+os.environ['MONGO_DB_INSTANCE']+"/"
@@ -28,7 +28,7 @@ class DbHandler:
                 raise ValueError()
         except ValueError:
             print("Error %s - %s" % (str(1).zfill(4), "No Document Found"))
-            self.errorLog.append({"error_code": 1,
+            self.error_log.append({"error_code": 1,
                                   "error_msg": "No Document Found",
                                   "context": "Retrieve Game",
                                   "timestamp": datetime.datetime.now()})
@@ -46,7 +46,7 @@ class DbHandler:
                 raise ValueError()
         except ValueError:
             print("Error %s - %s" % (str(1).zfill(4),"No Document Found"))
-            self.errorLog.append({"error_code": 1,
+            self.error_log.append({"error_code": 1,
                                   "error_msg": "No Document Found",
                                   "context": "Update Game",
                                   "timestamp": datetime.datetime.now()})
@@ -70,7 +70,7 @@ class DbHandler:
                 inserted_id = insert_result.inserted_id
         except ValueError:
             print("Error %s - %s" % (str(2).zfill(4), "No Document Inserted"))
-            self.errorLog.append({"error_code": 2,
+            self.error_log.append({"error_code": 2,
                                   "error_msg": "No Document Inserted",
                                   "context": "Save snapshot",
                                   "timestamp": datetime.datetime.now()})
@@ -78,7 +78,8 @@ class DbHandler:
         return inserted_id
 
     def create_mongo_db_client(self):
-        return pymongo.MongoClient(self.connection_url)
+        return pymongo.MongoClient(self.connection_url)  # pragma: no cover
+        # We do not cover this line as we do not really want real connection to Database
 
 
 def insert_one(client_mongo_db, data):

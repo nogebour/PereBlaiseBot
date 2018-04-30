@@ -25,14 +25,14 @@ class CharacterV2:
     piecesBronze = None
     niveau = None
     sexe = None
-    experience= None
+    experience = None
     stuff = []
     weapons = []
+
 
 class CharacterDBHandler:
     def __init__(self):
         self.dbHandler = DbHandler()
-        self.dbHandler.retrieve_game()
         self.data = self.dbHandler.data
         self.key = ["RACE", "JOB", "EV", "EVMAX", "EA", "EAMAX", "COU", "INT", "CHA", "AD", "FO", "AT", "PRD", "DESTINY", "SKILLS", "GOLD", "SILVER", "BRONZE", "LEVEL", "SEX", "XP", "NAME", "STUFF", "WEAPONS", "PLAYER"]
         self.mapping = {self.key[0]:"Race",
@@ -60,6 +60,9 @@ class CharacterDBHandler:
                         self.key[22]:"Equipement",
                         self.key[23]:"Armes",
                         self.key[23]:"Joueur"}
+
+    def initialize(self):
+        self.dbHandler.retrieve_game()
 
     def mappingCharStat(self, aKey, aChar):
         if aKey==self.key[0]:
