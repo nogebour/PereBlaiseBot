@@ -155,7 +155,7 @@ def test_handle_rest():
                                        "points de vie."
 
 
-def test_handle_rest():
+def test_handle_walk():
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
     character_db_handler.increaseEvGroup = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
