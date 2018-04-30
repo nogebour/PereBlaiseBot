@@ -18,7 +18,6 @@ class SettingsHandler:
         self.start_time = datetime.now()
         self.current_time = datetime.now()
         self.players = []
-
         self.db_handler = DbHandler()
 
     def initialize(self):
@@ -56,25 +55,25 @@ class SettingsHandler:
             return int(delta / 60)
         else:
             self.error_log.append({"error_code": 3,
-                                   "error_msg": "Invalid Rest Quality",
+                                   "error_msg": "Invalid rest quality",
                                    "context": "compute_rest",
                                    "timestamp": datetime.now()})
             raise ValueError("Choix entre 'normal'|'bon'|'excellent'")
 
     # 'normale','rapide','barbare'
-    def compute_walk(self, rythme, delta):
+    def compute_walk(self, speed, delta):
         injury = 0
         if delta > 480:
             injury += int(1+(delta-480)/60)
-        if rythme == "normale":
+        if speed == "normale":
             injury += 0
-        elif rythme == "rapide":
+        elif speed == "rapide":
             injury += int(delta / 240) + 1
-        elif rythme == "barbare":
+        elif speed == "barbare":
             injury += int(delta / 120) + 1
         else:
             self.error_log.append({"error_code": 4,
-                                   "error_msg": "Invalid Walk Quality",
+                                   "error_msg": "Invalid walk speed",
                                    "context": "compute_walk",
                                    "timestamp": datetime.now()})
             raise ValueError("Choix entre 'normale'|'rapide'|'barbare'")
@@ -85,13 +84,15 @@ class SettingsHandler:
         try:
             delta = int(length)
         except ValueError:
-            print("Not an integer")
+            self.error_log.append({"error_code": 5,
+                                   "error_msg": "Not an integer",
+                                   "context": "handle_rest",
+                                   "timestamp": datetime.now()})
             return False
 
         try:
             heal = self.compute_rest(quality, delta)
-        except ValueError as e:
-            embed.add_field(value=str(e))
+        except ValueError:
             return False
 
         players = db_handler.increaseEvGroup(heal)
@@ -103,22 +104,24 @@ class SettingsHandler:
                 inline=False)
         return True
 
-    def handle_walk(self, rythme, length, embed):
-        db_handler = self.get_character_db_handler()
+    def handle_walk(self, speed, length, embed):
+        character_db_handler = self.get_character_db_handler()
         delta = 0
         try:
             delta = int(length)
         except ValueError:
-            print("Not an integer")
+            self.error_log.append({"error_code": 5,
+                                   "error_msg": "Not an integer",
+                                   "context": "handle_walk",
+                                   "timestamp": datetime.now()})
             return False
         injury = 0
         try:
-            injury = self.compute_walk(rythme, delta)
-        except ValueError as e:
-            embed.add_field(value=str(e))
+            injury = self.compute_walk(speed, delta)
+        except ValueError:
             return False
 
-        players = db_handler.decreaseEvGroup(injury)
+        players = character_db_handler.decreaseEvGroup(injury)
         for a_player in players:
             embed.add_field(
                 name= "Blessure enregistrée",

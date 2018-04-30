@@ -2,8 +2,10 @@ import mongomock
 from unittest.mock import MagicMock
 
 import src.Settings
+import src.CharacterDBHandler
 import src.DbHandler
 
+import discord
 import datetime
 
 
@@ -90,7 +92,7 @@ def test_compute_rest_wrong_quality():
     except ValueError:
         assert len(setting.error_log) == 1
         assert setting.error_log[0]["error_code"] == 3
-        assert setting.error_log[0]["error_msg"] == "Invalid Rest Quality"
+        assert setting.error_log[0]["error_msg"] == "Invalid rest quality"
         assert setting.error_log[0]["context"] == "compute_rest"
 
 
@@ -119,15 +121,111 @@ def test_compute_walk_fastest():
 
 
 def test_compute_walk_wrong_quality():
-    settingWalk = src.Settings.SettingsHandler()
-    print(len(settingWalk.error_log))
+    setting = src.Settings.SettingsHandler()
+    print(len(setting.error_log))
     try:
-        settingWalk.compute_walk("excellentsasas", 300)
+        setting.compute_walk("excellentsasas", 300)
         assert False
     except ValueError:
         print("Expected")
 
-    assert len(settingWalk.error_log) == 1
-    assert settingWalk.error_log[0]["error_code"] == 4
-    assert settingWalk.error_log[0]["error_msg"] == "Invalid Walk Quality"
-    assert settingWalk.error_log[0]["context"] == "compute_walk"
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 4
+    assert setting.error_log[0]["error_msg"] == "Invalid walk speed"
+    assert setting.error_log[0]["context"] == "compute_walk"
+
+
+def test_handle_rest():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.increaseEvGroup = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
+                                                                   {'id': 'Dieu', 'remainingLife': '999'},
+                                                                   {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_rest("bon", 480, an_embed)
+    assert result
+    assert len(an_embed.fields) == 3
+    assert an_embed.fields[0].name == "Soin enregistrée"
+    assert an_embed.fields[0].value == "Le joueur <@Satan> a soigné 4 points de vie.\nIl reste 666 points de vie."
+    assert an_embed.fields[1].name == "Soin enregistrée"
+    assert an_embed.fields[1].value == "Le joueur <@Dieu> a soigné 4 points de vie.\nIl reste 999 points de vie."
+    assert an_embed.fields[2].name == "Soin enregistrée"
+    assert an_embed.fields[2].value == "Le joueur <@Chuck Norris> a soigné 4 points de vie.\nIl reste 9999999 " \
+                                       "points de vie."
+
+
+def test_handle_rest():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.increaseEvGroup = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
+                                                                   {'id': 'Dieu', 'remainingLife': '999'},
+                                                                   {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_walk("normale", 480, an_embed)
+    assert result
+    assert len(an_embed.fields) == 3
+    assert an_embed.fields[0].name == "Blessure enregistrée"
+    assert an_embed.fields[0].value == "Le joueur <@Satan> a pris 0 points de dégats.\nIl reste 666 points de vie."
+    assert an_embed.fields[1].name == "Blessure enregistrée"
+    assert an_embed.fields[1].value == "Le joueur <@Dieu> a pris 0 points de dégats.\nIl reste 999 points de vie."
+    assert an_embed.fields[2].name == "Blessure enregistrée"
+    assert an_embed.fields[2].value == "Le joueur <@Chuck Norris> a pris 0 points de dégats.\nIl reste 9999999 " \
+                                       "points de vie."
+
+
+def test_handle_rest_not_integer():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_rest("normale", "toto", an_embed)
+    assert (not result)
+    assert len(an_embed.fields) == 0
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 5
+    assert setting.error_log[0]["error_msg"] == "Not an integer"
+    assert setting.error_log[0]["context"] == "handle_rest"
+
+
+def test_handle_walk_not_integer():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_walk("normale", "toto", an_embed)
+    assert (not result)
+    assert len(an_embed.fields) == 0
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 5
+    assert setting.error_log[0]["error_msg"] == "Not an integer"
+    assert setting.error_log[0]["context"] == "handle_walk"
+
+
+def test_handle_rest_invalid_quality():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_rest("yooy", 300, an_embed)
+    assert (not result)
+    assert len(an_embed.fields) == 0
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 3
+    assert setting.error_log[0]["error_msg"] == "Invalid rest quality"
+    assert setting.error_log[0]["context"] == "compute_rest"
+
+
+def test_handle_walk_invalid_speed():
+    setting = src.Settings.SettingsHandler()
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    an_embed = discord.Embed(color=0x00ff00)
+    result = setting.handle_walk("yoyo", 300, an_embed)
+    assert (not result)
+    assert len(an_embed.fields) == 0
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 4
+    assert setting.error_log[0]["error_msg"] == "Invalid walk speed"
+    assert setting.error_log[0]["context"] == "compute_walk"
