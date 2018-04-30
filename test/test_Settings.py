@@ -138,9 +138,9 @@ def test_compute_walk_wrong_quality():
 def test_handle_rest():
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
-    character_db_handler.increaseEvGroup = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
-                                                                   {'id': 'Dieu', 'remainingLife': '999'},
-                                                                   {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
+    character_db_handler.increase_ev_group = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
+                                                                     {'id': 'Dieu', 'remainingLife': '999'},
+                                                                     {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_rest("bon", 480, an_embed)
@@ -158,9 +158,9 @@ def test_handle_rest():
 def test_handle_walk():
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
-    character_db_handler.increaseEvGroup = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
-                                                                   {'id': 'Dieu', 'remainingLife': '999'},
-                                                                   {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
+    character_db_handler.increase_ev_group = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
+                                                                     {'id': 'Dieu', 'remainingLife': '999'},
+                                                                     {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_walk("normale", 480, an_embed)

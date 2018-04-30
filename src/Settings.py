@@ -95,7 +95,7 @@ class SettingsHandler:
         except ValueError:
             return False
 
-        players = db_handler.increaseEvGroup(heal)
+        players = db_handler.increase_ev_group(heal)
         for a_player in players:
             embed.add_field(
                 name= "Soin enregistrée",
@@ -121,7 +121,7 @@ class SettingsHandler:
         except ValueError:
             return False
 
-        players = character_db_handler.decreaseEvGroup(injury)
+        players = character_db_handler.decrease_ev_group(injury)
         for a_player in players:
             embed.add_field(
                 name= "Blessure enregistrée",
