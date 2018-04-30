@@ -1,12 +1,11 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
+import discord
 import random
 import re
 
-import discord
-from CharacterDBHandler import CharacterDBHandler
-from Settings import SettingsHandler
-
-from src.DbHandler import DbHandler
+from .CharacterDBHandler import CharacterDBHandler
+from .Settings import SettingsHandler
+from .DbHandler import DbHandler
 
 HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '386082775066869760'
@@ -296,6 +295,7 @@ class PereBlaiseBot:
 
             elif args[1] == "temps" and len(args) == 2:
                 theSettings = SettingsHandler()
+                theSettings.initialize()
                 embed = discord.Embed(color=0x00ff00)
                 embed.add_field(
                     name=("Heure du jeu"),
@@ -305,6 +305,7 @@ class PereBlaiseBot:
 
             elif args[1] == "temps" and args[2] == "passe" and len(args) == 3:
                 theSettings = SettingsHandler()
+                theSettings.initialize()
                 aDelta = theSettings.get_elapsed_time()
                 embed = discord.Embed(color=0x00ff00)
                 embed.add_field(
@@ -315,6 +316,7 @@ class PereBlaiseBot:
 
             elif args[1] == "temps" and len(args) == 3:
                 theSettings = SettingsHandler()
+                theSettings.initialize()
                 embed = discord.Embed(color=0x00ff00)
                 if(self.makeTimeOperation(args[2], message, theSettings, embed)):
                     theSettings.save_settings()
@@ -323,6 +325,7 @@ class PereBlaiseBot:
             elif args[1] == "temps" and len(args) == 5:
                 if(args[2] == "repos" or args[2] == "marche"):
                     theSettings = SettingsHandler()
+                    theSettings.initialize()
                     embed = discord.Embed(color=0x00ff00)
                     if self.makeTimeOperation(args[4], message, theSettings, embed):
                         if args[2] == 'repos':

@@ -5,6 +5,7 @@ from src.DbHandler import DbHandler
 
 
 class SettingsHandler:
+    data = None
     dbHandler = None
     pattern = "%d/%m/%Y - %H:%M"
     key_start_time = "start_time"
@@ -15,11 +16,10 @@ class SettingsHandler:
     current_time = datetime.now()
     players = []
 
-    def __init__(self, db_handler = None):
-        if db_handler is None:
-            self.dbHandler = DbHandler()
-        else:
-            self.dbHandler = db_handler
+    def __init__(self):
+        self.dbHandler = DbHandler()
+
+    def initialize(self):
         self.dbHandler.retrieve_game()
         self.data = self.dbHandler.data
         self.fill_data()

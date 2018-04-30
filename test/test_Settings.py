@@ -16,7 +16,9 @@ def test_filldata_and_init_ok():
                                      "Jane Doe",
                                      "Chuck Norris"]}}
     mongo_db_client_mock.pereBlaise.games.insert(json)
-    setting = src.Settings.SettingsHandler(db_handler)
+    setting = src.Settings.SettingsHandler()
+    setting.dbHandler = db_handler
+
     assert (json == setting.data)
     assert (setting.data["name"] == "kornettoh")
     assert (setting.start_time.strftime("%d/%m/%Y - %H:%M") == json["settings"]["start_time"])
