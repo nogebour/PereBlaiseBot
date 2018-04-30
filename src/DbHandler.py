@@ -4,16 +4,15 @@ import os
 
 
 class DbHandler:
-    data = None
     snapshot_pattern = "%Y%m%d_%H%M"
     snapshot_name = "snapshot"
     key_game = "kornettoh"
     key_name = 'name'
-    party_name = None
 
     def __init__(self, party_name=key_game):
         self.party_name = party_name
         self.error_log = []
+        self.data = None
         self.connection_url = "mongodb+srv://"+os.environ['MONGO_DB_USER']+\
                               ":"+os.environ['MONGO_DB_PASSWORD']+\
                               "@"+os.environ['MONGO_DB_INSTANCE']+"/"

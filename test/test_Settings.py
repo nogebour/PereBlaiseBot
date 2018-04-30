@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import src.Settings
 import src.DbHandler
+import src.CharacterDBHandler
 
 import datetime
 
@@ -119,15 +120,15 @@ def test_compute_walk_fastest():
 
 
 def test_compute_walk_wrong_quality():
-    settingWalk = src.Settings.SettingsHandler()
-    print(len(settingWalk.error_log))
+    setting = src.Settings.SettingsHandler()
+    print(len(setting.error_log))
     try:
-        settingWalk.compute_walk("excellentsasas", 300)
+        setting.compute_walk("excellentsasas", 300)
         assert False
     except ValueError:
         print("Expected")
 
-    assert len(settingWalk.error_log) == 1
-    assert settingWalk.error_log[0]["error_code"] == 4
-    assert settingWalk.error_log[0]["error_msg"] == "Invalid Walk Quality"
-    assert settingWalk.error_log[0]["context"] == "compute_walk"
+    assert len(setting.error_log) == 1
+    assert setting.error_log[0]["error_code"] == 4
+    assert setting.error_log[0]["error_msg"] == "Invalid Walk Quality"
+    assert setting.error_log[0]["context"] == "compute_walk"
