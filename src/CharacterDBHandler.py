@@ -1,9 +1,9 @@
 import discord
 
-from src.DbHandler import DbHandler
+from src.Database.DbHandler import DbHandler
 
 
-class CharacterV2:
+class Character:
     userName = None
     name = None
     job = None
@@ -117,14 +117,9 @@ class CharacterDBHandler:
         elif key == self.key[24]:
             return str(character.userName)
 
-    def read_file_for_character(self, user_id):
-        for aPlayer in self.data['settings']['characters']:
-            if aPlayer["PLAYER"] == user_id:
-                return aPlayer
-
     def import_character(self, user_name):
-        values = self.read_file_for_character(user_name)
-        new_character = CharacterV2()
+        values = self.dbHandler.read_file_for_character(user_name)
+        new_character = Character()
         new_character.userName = values["PLAYER"]
         new_character.name = values["NAME"]
         new_character.name = values["NAME"]
@@ -216,7 +211,7 @@ class CharacterDBHandler:
         return embeds
 
     def money_operation(self, username, amount):
-        the_char = self.read_file_for_character(username)
+        the_char = self.dbHandler.read_file_for_character(username)
         print(the_char)
         operations = amount.split("/")
         if len(operations) >= 1:
@@ -238,7 +233,7 @@ class CharacterDBHandler:
         return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
 
     def increase_ev(self, user_name, amount):
-        char_sheet = self.read_file_for_character(user_name)
+        char_sheet = self.dbHandler.read_file_for_character(user_name)
         tmp_ev = int(char_sheet["EV"]) + amount
         if tmp_ev > int(char_sheet["EVMAX"]):
             tmp_ev = int(char_sheet["EVMAX"])
