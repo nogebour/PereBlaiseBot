@@ -6,7 +6,6 @@ import os
 from src.Error.ErrorManager import ErrorManager, ErrorCode
 
 
-
 class DbHandler:
     snapshot_pattern = "%Y%m%d_%H%M"
     snapshot_name = "snapshot"
@@ -16,8 +15,8 @@ class DbHandler:
     def __init__(self, party_name=key_game):
         self.party_name = party_name
         self.data = None
-        self.connection_url = "mongodb+srv://"+os.environ['MONGO_DB_USER']+\
-                              ":"+os.environ['MONGO_DB_PASSWORD']+\
+        self.connection_url = "mongodb+srv://"+os.environ['MONGO_DB_USER'] +\
+                              ":"+os.environ['MONGO_DB_PASSWORD'] +\
                               "@"+os.environ['MONGO_DB_INSTANCE']+"/"
 
     def retrieve_game(self):
