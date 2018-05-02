@@ -1,0 +1,37 @@
+from enum import Enum
+import datetime
+
+
+class ErrorCode(Enum):
+    INTERNAL_ERROR = (0, "Internal error")
+    NO_DOCUMENT_FOUND = (1, "No document found")
+    NO_DOCUMENT_INSERTED = (2, "No document inserted")
+    INVALID_REST_QUALITY = (3, "Invalid rest quality")
+    INVALID_WALK_SPEED = (4, "Invalid walk speed")
+    NOT_AN_INTEGER = (5, "Not an integer")
+
+    def __init__(self, error_code, error_message):
+        self.error_code = error_code
+        self.error_message = error_message
+
+
+class Error:
+    """Class defining an error based on :
+    - its Error Code
+    - its Error Message
+    - its Context
+    - its TimeStamp """
+
+    def __init__(self, error_code_enum, context, timestamp):
+        self.error_type = error_code_enum
+        self.error_code = error_code_enum.error_code
+        self.error_message = error_code_enum.error_message
+        self.context = context
+        self.timestamp = timestamp
+
+    def __str__(self):
+        return "[Type:"+str(self.error_type) +\
+            ", Error Code:'"+str(self.error_code) +\
+            "', Error Message:'"+self.error_message +\
+            "', Context: '"+self.context +\
+            "', Timestamp: "+str(self.timestamp)+"]"

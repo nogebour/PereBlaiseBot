@@ -5,12 +5,14 @@ import src.Settings
 import src.CharacterDBHandler
 import src.DbHandler
 import src.CharacterDBHandler
+import src.Error.ErrorManager
 
 import discord
 import datetime
 
 
 def test_filldata_and_init_ok():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
@@ -23,13 +25,21 @@ def test_filldata_and_init_ok():
     mongo_db_client_mock.pereBlaise.games.insert(json)
     setting = src.Settings.SettingsHandler()
     setting.db_handler = db_handler
+
+    assert setting.data is None
+    assert db_handler.data is None
+
     setting.initialize()
+
     assert (json == setting.data)
     assert (setting.data["name"] == "kornettoh")
     assert (setting.start_time.strftime("%d/%m/%Y - %H:%M") == json["settings"]["start_time"])
     assert (setting.current_time.strftime("%d/%m/%Y - %H:%M") == json["settings"]["current_time"])
     assert (setting.players == json["settings"]["players"])
-    assert (len(db_handler.error_log) == 0)
+    if len(src.Error.ErrorManager.ErrorManager.error_log) != 0:
+        print(src.Error.ErrorManager.ErrorManager.error_log[0])
+        assert False
+
     return setting, json["settings"]["start_time"], json["settings"]["current_time"]
 
 
@@ -91,10 +101,10 @@ def test_compute_rest_wrong_quality():
         setting.compute_rest("excellentsasas", 300)
         assert False
     except ValueError:
-        assert len(setting.error_log) == 1
-        assert setting.error_log[0]["error_code"] == 3
-        assert setting.error_log[0]["error_msg"] == "Invalid rest quality"
-        assert setting.error_log[0]["context"] == "compute_rest"
+        assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+        error = src.Error.ErrorManager.ErrorManager.error_log[0]
+        assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_REST_QUALITY
+        assert error.context == "compute_rest"
 
 
 def test_compute_walk_normal_too_long():
@@ -122,18 +132,18 @@ def test_compute_walk_fastest():
 
 
 def test_compute_walk_wrong_quality():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
-    print(len(setting.error_log))
     try:
         setting.compute_walk("excellentsasas", 300)
         assert False
     except ValueError:
         print("Expected")
 
-    assert len(setting.error_log) == 1
-    assert setting.error_log[0]["error_code"] == 4
-    assert setting.error_log[0]["error_msg"] == "Invalid walk speed"
-    assert setting.error_log[0]["context"] == "compute_walk"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_WALK_SPEED
+    assert error.context == "compute_walk"
 
 
 def test_handle_rest():
@@ -177,6 +187,7 @@ def test_handle_walk():
 
 
 def test_handle_rest_not_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
@@ -184,13 +195,14 @@ def test_handle_rest_not_integer():
     result = setting.handle_rest("normale", "toto", an_embed)
     assert (not result)
     assert len(an_embed.fields) == 0
-    assert len(setting.error_log) == 1
-    assert setting.error_log[0]["error_code"] == 5
-    assert setting.error_log[0]["error_msg"] == "Not an integer"
-    assert setting.error_log[0]["context"] == "handle_rest"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+    assert error.context == "handle_rest"
 
 
 def test_handle_walk_not_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
@@ -198,13 +210,14 @@ def test_handle_walk_not_integer():
     result = setting.handle_walk("normale", "toto", an_embed)
     assert (not result)
     assert len(an_embed.fields) == 0
-    assert len(setting.error_log) == 1
-    assert setting.error_log[0]["error_code"] == 5
-    assert setting.error_log[0]["error_msg"] == "Not an integer"
-    assert setting.error_log[0]["context"] == "handle_walk"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+    assert error.context == "handle_walk"
 
 
 def test_handle_rest_invalid_quality():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
@@ -212,13 +225,14 @@ def test_handle_rest_invalid_quality():
     result = setting.handle_rest("yooy", 300, an_embed)
     assert (not result)
     assert len(an_embed.fields) == 0
-    assert len(setting.error_log) == 1
-    assert setting.error_log[0]["error_code"] == 3
-    assert setting.error_log[0]["error_msg"] == "Invalid rest quality"
-    assert setting.error_log[0]["context"] == "compute_rest"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_REST_QUALITY
+    assert error.context == "compute_rest"
 
 
 def test_handle_walk_invalid_speed():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
@@ -226,8 +240,8 @@ def test_handle_walk_invalid_speed():
     result = setting.handle_walk("yoyo", 300, an_embed)
     assert (not result)
     assert len(an_embed.fields) == 0
-    assert len(setting.error_log) == 1
-    assert setting.error_log[0]["error_code"] == 4
-    assert setting.error_log[0]["error_msg"] == "Invalid walk speed"
-    assert setting.error_log[0]["context"] == "compute_walk"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_WALK_SPEED
+    assert error.context == "compute_walk"
 

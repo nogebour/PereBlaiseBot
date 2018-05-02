@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 
-from src.CharacterDBHandler import CharacterDBHandler
-from src.DbHandler import DbHandler
+from .CharacterDBHandler import CharacterDBHandler
+from .DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
+
 
 
 class SettingsHandler:
@@ -14,7 +16,6 @@ class SettingsHandler:
     def __init__(self):
         self.data = None
         self.db_handler = None
-        self.error_log = []
         self.start_time = datetime.now()
         self.current_time = datetime.now()
         self.players = []
@@ -54,10 +55,7 @@ class SettingsHandler:
         elif quality == "excellent":
             return int(delta / 60)
         else:
-            self.error_log.append({"error_code": 3,
-                                   "error_msg": "Invalid rest quality",
-                                   "context": "compute_rest",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.INVALID_REST_QUALITY, "compute_rest")
             raise ValueError("Choix entre 'normal'|'bon'|'excellent'")
 
     # 'normale','rapide','barbare'
@@ -72,10 +70,7 @@ class SettingsHandler:
         elif speed == "barbare":
             injury += int(delta / 120) + 1
         else:
-            self.error_log.append({"error_code": 4,
-                                   "error_msg": "Invalid walk speed",
-                                   "context": "compute_walk",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.INVALID_WALK_SPEED, "compute_walk")
             raise ValueError("Choix entre 'normale'|'rapide'|'barbare'")
         return injury
 
@@ -84,10 +79,7 @@ class SettingsHandler:
         try:
             delta = int(length)
         except ValueError:
-            self.error_log.append({"error_code": 5,
-                                   "error_msg": "Not an integer",
-                                   "context": "handle_rest",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "handle_rest")
             return False
 
         try:
@@ -110,10 +102,7 @@ class SettingsHandler:
         try:
             delta = int(length)
         except ValueError:
-            self.error_log.append({"error_code": 5,
-                                   "error_msg": "Not an integer",
-                                   "context": "handle_walk",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "handle_walk")
             return False
         injury = 0
         try:

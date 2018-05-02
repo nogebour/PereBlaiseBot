@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import src.DbHandler
 import src.CharacterDBHandler
+import src.Error.ErrorManager
 
 import mongomock
 import pymongo.results
@@ -22,6 +23,7 @@ def test_init():
 
 
 def test_retrieve_game_ok():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
@@ -29,24 +31,26 @@ def test_retrieve_game_ok():
     db_handler.retrieve_game()
     assert (db_handler.data["name"] == "kornettoh")
     assert (db_handler.data["game"] == 1)
-    assert (len(db_handler.error_log) == 0)
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 
 
 def test_retrieve_game_ko():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     db_handler.retrieve_game()
+
     assert (db_handler.data is None)
-    assert (len(db_handler.error_log) == 1)
-    assert (db_handler.error_log[0]["error_code"] == 1)
-    assert (db_handler.error_log[0]["error_msg"] == "No Document Found")
-    assert (db_handler.error_log[0]["context"] == "Retrieve Game")
-    assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
-            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    assert (len(error_mgr.error_log) == 1)
+    assert (error_mgr.error_log[0].error_type == src.Error.ErrorManager.ErrorCode.NO_DOCUMENT_FOUND)
+    assert (error_mgr.error_log[0].context == "retrieve_game")
 
 
 def test_update_game_ok():
+    src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
     db_handler = src.DbHandler.DbHandler()
@@ -66,10 +70,11 @@ def test_update_game_ok():
     else:
         assert (docs[0]["game"] == 2)
         assert (docs[0]["name"] == "kornettoh")
-        assert (len(db_handler.error_log) == 0)
+        assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 
 
 def test_save_snapshot_game_ok_without_id():
+    src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
     db_handler = src.DbHandler.DbHandler()
@@ -90,10 +95,11 @@ def test_save_snapshot_game_ok_without_id():
     else:
         assert (docs[0]["game"] == 1)
         assert (docs[0]["name"] == "snapshotkornettoh"+datetime.datetime.now().strftime("%Y%m%d_%H%M"))
-        assert (len(db_handler.error_log) == 0)
+        assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 
 
 def test_saveSnapshotGame_ok():
+    src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
     db_handler = src.DbHandler.DbHandler()
@@ -114,10 +120,12 @@ def test_saveSnapshotGame_ok():
     else:
         assert (docs[0]["game"] == 1)
         assert (docs[0]["name"] == "snapshotkornettoh"+datetime.datetime.now().strftime("%Y%m%d_%H%M"))
-        assert (len(db_handler.error_log) == 0)
+        assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 
 
 def test_update_game_ko():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+
     # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
@@ -131,18 +139,18 @@ def test_update_game_ko():
     # Assert
     docs = mongo_db_client_mock.pereBlaise.games.find({"name": "kornettoh"})
     if docs.count() == 0:
-        assert (len(db_handler.error_log) == 1)
-        assert (db_handler.error_log[0]["error_code"] == 1)
-        assert (db_handler.error_log[0]["error_msg"] == "No Document Found")
-        assert (db_handler.error_log[0]["context"] == "Update Game")
-        assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 1)
+        error = src.Error.ErrorManager.ErrorManager.error_log[0]
+        assert (error.error_type == src.Error.ErrorManager.ErrorCode.NO_DOCUMENT_FOUND)
+        assert (error.context == "update_game")
     else:
         print("Doc found"+str(docs.count()))
         assert False
 
 
 def test_save_snapshot_game_ko():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+
     # Setup
     db_handler = src.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
@@ -150,7 +158,7 @@ def test_save_snapshot_game_ko():
     new_json = {"name": "kornettoh", "game": 2}
     db_handler.data = new_json
     insert_one_result = pymongo.results.InsertOneResult(None, True)
-    src.DbHandler.insert_one = MagicMock(return_value=insert_one_result)
+    db_handler.insert_one = MagicMock(return_value=insert_one_result)
 
 
     # Operation to test
@@ -158,12 +166,10 @@ def test_save_snapshot_game_ko():
 
     # Assert
     if inserted_id is None:
-        assert (len(db_handler.error_log) == 1)
-        assert (db_handler.error_log[0]["error_code"] == 2)
-        assert (db_handler.error_log[0]["error_msg"] == "No Document Inserted")
-        assert (db_handler.error_log[0]["context"] == "Save snapshot")
-        assert (db_handler.error_log[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") ==
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 1)
+        error = src.Error.ErrorManager.ErrorManager.error_log[0]
+        assert (error.error_type == src.Error.ErrorManager.ErrorCode.NO_DOCUMENT_INSERTED)
+        assert (error.context == "save_snapshot")
     else:
-        print("Doc found"+inserted_id)
+        print("Doc found"+str(inserted_id))
         assert False
