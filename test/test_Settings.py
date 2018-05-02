@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import src.Settings
 import src.CharacterDBHandler
-import src.DbHandler
+import src.Database.DbHandler
 import src.CharacterDBHandler
 import src.Error.ErrorManager
 
@@ -13,7 +13,7 @@ import datetime
 
 def test_filldata_and_init_ok():
     src.Error.ErrorManager.ErrorManager().clear_error()
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     json = {"name": "kornettoh",
@@ -21,7 +21,9 @@ def test_filldata_and_init_ok():
                          "current_time": "02/01/2018 - 02:02",
                          "players": ["John Doe",
                                      "Jane Doe",
-                                     "Chuck Norris"]}}
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
     mongo_db_client_mock.pereBlaise.games.insert(json)
     setting = src.Settings.SettingsHandler()
     setting.db_handler = db_handler

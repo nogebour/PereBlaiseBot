@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from .CharacterDBHandler import CharacterDBHandler
-from .DbHandler import DbHandler
+from src.Database.DbHandler import DbHandler
 from .Error.ErrorManager import ErrorManager, ErrorCode
 
 

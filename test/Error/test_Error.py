@@ -76,6 +76,16 @@ def test_error_code_6():
     default_error = Error(ErrorCode.UNABLE_TO_CONNECT_DB, default_context, default_timestamp)
     assert default_error.error_type == ErrorCode.UNABLE_TO_CONNECT_DB
     assert default_error.error_code == 6
-    assert default_error.error_message == "Unable to connect to database"
+    assert default_error.error_message == "Unable to connect to Database"
+    assert default_error.context == default_context
+    assert default_error.timestamp == default_timestamp
+
+def test_error_code_7():
+    default_timestamp = datetime.datetime(2018, 1, 2, 3, 4, 5, 6)
+    default_context = "test"
+    default_error = Error(ErrorCode.NO_CHARACTER_FOUND, default_context, default_timestamp)
+    assert default_error.error_type == ErrorCode.NO_CHARACTER_FOUND
+    assert default_error.error_code == 7
+    assert default_error.error_message == "Unable to find the character associated to the player"
     assert default_error.context == default_context
     assert default_error.timestamp == default_timestamp

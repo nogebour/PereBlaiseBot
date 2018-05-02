@@ -3,7 +3,7 @@ import pymongo.errors
 import datetime
 import os
 
-from .Error.ErrorManager import ErrorManager, ErrorCode
+from src.Error.ErrorManager import ErrorManager, ErrorCode
 
 
 
@@ -85,3 +85,11 @@ class DbHandler:
 
     def replace_one(self, client_mongo_db):
         return client_mongo_db.pereBlaise.games.replace_one({self.key_name: self.party_name}, self.data)
+
+    def read_file_for_character(self, user_id):
+        if self.data is None:
+            self.retrieve_game()
+        for player in self.data['settings']['characters']:
+            if player["PLAYER"] == user_id:
+                return player
+        ErrorManager().add_error(ErrorCode.NO_CHARACTER_FOUND, "read_file_for_character")

@@ -5,7 +5,7 @@ import re
 
 from .CharacterDBHandler import CharacterDBHandler
 from .Settings import SettingsHandler
-from .DbHandler import DbHandler
+from src.Database.DbHandler import DbHandler
 
 HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '386082775066869760'

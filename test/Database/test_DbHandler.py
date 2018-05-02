@@ -1,14 +1,14 @@
-from unittest.mock import MagicMock
 
-import src.DbHandler
 import src.CharacterDBHandler
+import src.Database.DbHandler
 import src.Error.ErrorManager
 
+
+from unittest.mock import MagicMock
+import datetime
 import mongomock
 import pymongo.results
 import pymongo.errors
-import datetime
-import os
 
 
 def mock_create_mongo_db_client():
@@ -16,16 +16,13 @@ def mock_create_mongo_db_client():
 
 
 def test_init():
-    os.environ['MONGO_DB_USER'] = "test1"
-    os.environ['MONGO_DB_PASSWORD'] = "test2"
-    os.environ['MONGO_DB_INSTANCE'] = "Test3"
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     assert (db_handler.connection_url == "mongodb+srv://test1:test2@Test3/")
 
 
 def test_wrong_url():
     src.Error.ErrorManager.ErrorManager().clear_error()
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     try:
         db_handler.retrieve_game()
         assert False
@@ -39,7 +36,7 @@ def test_wrong_url():
 
 def test_retrieve_game_ok():
     src.Error.ErrorManager.ErrorManager().clear_error()
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     mongo_db_client_mock.pereBlaise.games.insert({"name": "kornettoh", "game": 1})
@@ -51,7 +48,7 @@ def test_retrieve_game_ok():
 
 def test_retrieve_game_ko():
     src.Error.ErrorManager.ErrorManager().clear_error()
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     db_handler.retrieve_game()
@@ -68,7 +65,7 @@ def test_update_game_ok():
     src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     mongo_db_client_mock.pereBlaise.games.insert({"name": "kornettoh", "game": 1})
@@ -92,7 +89,7 @@ def test_save_snapshot_game_ok_without_id():
     src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 1}
@@ -117,7 +114,7 @@ def test_saveSnapshotGame_ok():
     src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 1, "_id": 123456789}
@@ -142,7 +139,7 @@ def test_update_game_ko():
     src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 2}
@@ -167,7 +164,7 @@ def test_save_snapshot_game_ko():
     src.Error.ErrorManager.ErrorManager().clear_error()
 
     # Setup
-    db_handler = src.DbHandler.DbHandler()
+    db_handler = src.Database.DbHandler.DbHandler()
     mongo_db_client_mock = mongomock.MongoClient()
     db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
     new_json = {"name": "kornettoh", "game": 2}
@@ -188,3 +185,59 @@ def test_save_snapshot_game_ko():
     else:
         print("Doc found"+str(inserted_id))
         assert False
+
+
+def test_read_doc_for_character():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    mongo_db_client_mock = mongomock.MongoClient()
+    db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+    mongo_db_client_mock.pereBlaise.games.insert(json)
+
+    player = db_handler.read_file_for_character("987654321")
+    assert "987654321" == player["PLAYER"]
+
+
+def test_read_doc_for_character_without_database():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+    db_handler.data = json
+
+    player = db_handler.read_file_for_character("987654321")
+    assert "987654321" == player["PLAYER"]
+
+
+def test_read_doc_for_character_without_character():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"}]}}
+    db_handler.data = json
+
+    player = db_handler.read_file_for_character("987654321")
+    assert player is None
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    error = src.Error.ErrorManager.ErrorManager.error_log[0]
+    assert error.error_type == src.Error.ErrorManager.ErrorCode.NO_CHARACTER_FOUND
+    assert error.context == "read_file_for_character"
