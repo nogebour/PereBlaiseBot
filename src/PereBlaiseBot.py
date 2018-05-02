@@ -8,7 +8,7 @@ from .Settings import SettingsHandler
 from src.Database.DbHandler import DbHandler
 
 HELP_CHANNEL = '387149097037070346'
-MJ_CHANNEL = '386082775066869760'
+MJ_CHANNEL = '411248354534752256'
 MJ_ID = '294164488427405312'
 
 class DiscordMessage:
@@ -283,9 +283,8 @@ class PereBlaiseBot:
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(
                         name=("Operations comptables enregistrés"),
-                        value="Le joueur "+message.author.name+" a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
+                        value="<@"+MJ_ID+">: Le joueur <@"+message.author.id+"> a maintenant "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
                         inline=False)
-                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'MJbourse':
@@ -298,9 +297,9 @@ class PereBlaiseBot:
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(
                         name=("Operations comptables enregistrés"),
-                        value="Le joueur <@"+user+"> a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
+                        value="<@" + MJ_ID + ">: Le joueur <@" + user + "> a maintenant " + str(gold) +
+                              " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
                         inline=False)
-                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == "temps" and len(args) == 2:
