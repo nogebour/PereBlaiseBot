@@ -6,6 +6,7 @@ import src.Error.ErrorManager
 
 import mongomock
 import pymongo.results
+import pymongo.errors
 import datetime
 import os
 
@@ -21,6 +22,20 @@ def test_init():
     db_handler = src.DbHandler.DbHandler()
     assert (db_handler.connection_url == "mongodb+srv://test1:test2@Test3/")
 
+
+def test_wrong_url():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.DbHandler.DbHandler()
+    try:
+        db_handler.retrieve_game()
+        assert False
+    except pymongo.errors.ConfigurationError:
+        assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+        error = src.Error.ErrorManager.ErrorManager.error_log[0]
+        assert error.error_type == src.Error.ErrorManager.ErrorCode.UNABLE_TO_CONNECT_DB
+        assert error.context == "create_mongo_db_client"
+    except :
+        assert False
 
 def test_retrieve_game_ok():
     src.Error.ErrorManager.ErrorManager().clear_error()

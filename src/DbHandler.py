@@ -1,4 +1,5 @@
 import pymongo
+import pymongo.errors
 import datetime
 import os
 
@@ -73,8 +74,11 @@ class DbHandler:
         return inserted_id
 
     def create_mongo_db_client(self):
-        return pymongo.MongoClient(self.connection_url)  # pragma: no cover
-        # We do not cover this line as we do not really want real connection to Database
+        try:
+            return pymongo.MongoClient(self.connection_url)
+        except pymongo.errors.ConfigurationError as e:
+            ErrorManager().add_error(ErrorCode.UNABLE_TO_CONNECT_DB, "create_mongo_db_client")
+            raise e
 
     def insert_one(self, client_mongo_db):
         return client_mongo_db.pereBlaise.games.insert_one(self.data)

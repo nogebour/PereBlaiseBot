@@ -9,6 +9,7 @@ class ErrorCode(Enum):
     INVALID_REST_QUALITY = (3, "Invalid rest quality")
     INVALID_WALK_SPEED = (4, "Invalid walk speed")
     NOT_AN_INTEGER = (5, "Not an integer")
+    UNABLE_TO_CONNECT_DB = (6, "Unable to connect to database")
 
     def __init__(self, error_code, error_message):
         self.error_code = error_code
