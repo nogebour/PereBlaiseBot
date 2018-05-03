@@ -4,37 +4,63 @@ from src.Database.DbHandler import DbHandler
 
 
 class Character:
-    userName = None
-    name = None
-    job = None
-    ev = None
-    evMax = None
-    ea = None
-    eaMax = None
-    courage = None
-    intelligence = None
-    charisme = None
-    adresse = None
-    force = None
-    attaque = None
-    parade = None
-    pointsDeDestin = None
-    competences = []
-    piecesOr = None
-    piecesArgent = None
-    piecesBronze = None
-    niveau = None
-    sexe = None
-    experience = None
-    stuff = []
-    weapons = []
+
+    def __init__(self):
+        self.userName = None
+        self.name = None
+        self.job = None
+        self.ev = None
+        self.ev_max = None
+        self.ea = None
+        self.ea_max = None
+        self.courage = None
+        self.intelligence = None
+        self.charisme = None
+        self.adresse = None
+        self.force = None
+        self.attaque = None
+        self.parade = None
+        self.pointsDeDestin = None
+        self.competences = []
+        self.piecesOr = None
+        self.piecesArgent = None
+        self.piecesBronze = None
+        self.niveau = None
+        self.sexe = None
+        self.experience = None
+        self.stuff = []
+        self.weapons = []
 
 
 class CharacterDBHandler:
     def __init__(self):
-        self.dbHandler = DbHandler()
+        self.db_handler = DbHandler()
         self.data = None
-        self.key = ["RACE", "JOB", "EV", "EVMAX", "EA", "EAMAX", "COU", "INT", "CHA", "AD", "FO", "AT", "PRD", "DESTINY", "SKILLS", "GOLD", "SILVER", "BRONZE", "LEVEL", "SEX", "XP", "NAME", "STUFF", "WEAPONS", "PLAYER"]
+        self.key = ["RACE",
+                    "JOB",
+                    "EV",
+                    "EVMAX",
+                    "EA",
+                    "EAMAX",
+                    "COU",
+                    "INT",
+                    "CHA",
+                    "AD",
+                    "FO",
+                    "AT",
+                    "PRD",
+                    "DESTINY",
+                    "SKILLS",
+                    "GOLD",
+                    "SILVER",
+                    "BRONZE",
+                    "LEVEL",
+                    "SEX",
+                    "XP",
+                    "NAME",
+                    "STUFF",
+                    "WEAPONS",
+                    "PLAYER"]
         self.mapping = {self.key[0]: "Race",
                         self.key[1]: "Métier",
                         self.key[2]: "Energie vitale",
@@ -59,13 +85,13 @@ class CharacterDBHandler:
                         self.key[21]: "Nom",
                         self.key[22]: "Equipement",
                         self.key[23]: "Armes",
-                        self.key[23]: "Joueur"}
+                        self.key[24]: "Joueur"}
 
     def initialize(self):
-        self.dbHandler.retrieve_game()
-        self.data = self.dbHandler.data
+        self.db_handler.retrieve_game()
+        self.data = self.db_handler.data
 
-    def mappingCharStat(self, key, character):
+    def mapping_char_stat(self, key, character):
         if key == self.key[0]:
             return character.race
         elif key == self.key[1]:
@@ -73,11 +99,11 @@ class CharacterDBHandler:
         elif key == self.key[2]:
             return character.ev
         elif key == self.key[3]:
-            return character.evMax
+            return character.ev_max
         elif key == self.key[4]:
             return character.ea
         elif key == self.key[5]:
-            return character.eaMax
+            return character.ea_max
         elif key == self.key[6]:
             return character.courage
         elif key == self.key[7]:
@@ -118,17 +144,16 @@ class CharacterDBHandler:
             return str(character.userName)
 
     def import_character(self, user_name):
-        values = self.dbHandler.read_file_for_character(user_name)
+        values = self.db_handler.read_file_for_character(user_name)
         new_character = Character()
         new_character.userName = values["PLAYER"]
-        new_character.name = values["NAME"]
         new_character.name = values["NAME"]
         new_character.race = values["RACE"]
         new_character.job = values["JOB"]
         new_character.ev = values["EV"]
-        new_character.evMax = values["EVMAX"]
+        new_character.ev_max = values["EVMAX"]
         new_character.ea = values["EA"]
-        new_character.eaMax = values["EAMAX"]
+        new_character.ea_max = values["EAMAX"]
         new_character.courage = values["COU"]
         new_character.intelligence = values["INT"]
         new_character.charisme = values["CHA"]
@@ -155,10 +180,12 @@ class CharacterDBHandler:
         return self.display_list_infos(0x00ff00, character, ["RACE", "JOB", "SEX", "LEVEL", "XP"], character.name)
 
     def display_basic_stats(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["EV", "EA", "DESTINY", "GOLD", "AT", "PRD", "AD"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00, character, ["EV", "EA", "DESTINY", "GOLD", "AT", "PRD", "AD"],
+                                       (character.name if display_name else None))
 
     def display_attack_info(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["AT", "PRD", "AD"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00, character, ["AT", "PRD", "AD"],
+                                       (character.name if display_name else None))
 
     def display_money_infos(self, character, display_name=False):
         return self.display_list_infos(0x00ff00, character, ["GOLD"], (character.name if display_name else None))
@@ -175,12 +202,14 @@ class CharacterDBHandler:
     def display_list_infos(self, color, character, list_stats, title=None):
         embed_formated = discord.Embed(color=color, title=title)
         for stat in list_stats:
-            str_value = self.mappingCharStat(stat, character)
+            str_value = self.mapping_char_stat(stat, character)
             if stat == "EA" or stat == "EV":
-                str_value = (self.mappingCharStat(stat, character) + "/" + self.mappingCharStat(stat+"MAX", character))
+                str_value = (self.mapping_char_stat(stat, character) + "/" +
+                             self.mapping_char_stat(stat + "MAX", character))
             elif stat == "GOLD":
-                str_value = (self.mappingCharStat("GOLD", character) + "/" + self.mappingCharStat("SILVER", character) +
-                             "/" + self.mappingCharStat("BRONZE", character))
+                str_value = (self.mapping_char_stat("GOLD", character) + "/" +
+                             self.mapping_char_stat("SILVER", character) + "/" +
+                             self.mapping_char_stat("BRONZE", character))
             embed_formated.add_field(
                 name=self.mapping[stat],
                 value=str_value,
@@ -211,7 +240,7 @@ class CharacterDBHandler:
         return embeds
 
     def money_operation(self, username, amount):
-        the_char = self.dbHandler.read_file_for_character(username)
+        the_char = self.db_handler.read_file_for_character(username)
         print(the_char)
         operations = amount.split("/")
         if len(operations) >= 1:
@@ -229,18 +258,18 @@ class CharacterDBHandler:
             if tmp_bronze < 0:
                 tmp_bronze = 0
             the_char["BRONZE"] = str(tmp_bronze)
-        self.dbHandler.update_game()
+        self.db_handler.update_game()
         return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
 
     def increase_ev(self, user_name, amount):
-        char_sheet = self.dbHandler.read_file_for_character(user_name)
+        char_sheet = self.db_handler.read_file_for_character(user_name)
         tmp_ev = int(char_sheet["EV"]) + amount
         if tmp_ev > int(char_sheet["EVMAX"]):
             tmp_ev = int(char_sheet["EVMAX"])
         if tmp_ev < 0:
             tmp_ev = 0
         char_sheet["EV"] = str(tmp_ev)
-        self.dbHandler.update_game()
+        self.db_handler.update_game()
         return char_sheet["EV"]
 
     def decrease_ev(self, user_name, amount):
@@ -249,7 +278,7 @@ class CharacterDBHandler:
     def increase_ev_group(self, amount):
         print("increase")
         result = []
-        for player in self.dbHandler.data['settings']['characters']:
+        for player in self.db_handler.data['settings']['characters']:
             print("Decrease player" + player["PLAYER"])
             temp_ev = int(player["EV"]) + amount
             if temp_ev > int(player["EVMAX"]):
@@ -259,7 +288,7 @@ class CharacterDBHandler:
             player["EV"] = str(temp_ev)
             result.append({'id': player["PLAYER"], 'remainingLife': player["EV"]})
         print('Save Changes')
-        self.dbHandler.update_game()
+        self.db_handler.update_game()
         return result
 
     def decrease_ev_group(self, amount):

@@ -1,0 +1,351 @@
+import src.CharacterDBHandler
+import src.Database.DbHandler
+import src.Error.ErrorManager
+import discord.colour
+
+from unittest.mock import MagicMock
+import mongomock
+
+def test_initialize_ok():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    mongo_db_client_mock = mongomock.MongoClient()
+    db_handler.create_mongo_db_client = MagicMock(return_value=mongo_db_client_mock)
+    mongo_db_client_mock.pereBlaise.games.insert({"name": "kornettoh", "game": 1})
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+    character_handler.initialize()
+
+    assert (character_handler.data["name"] == "kornettoh")
+    assert (character_handler.data["game"] == 1)
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
+
+
+def test_import_character():
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "NAME": "Chuck Norris",
+                                                    "RACE": "God",
+                                                    "JOB": "Soldier",
+                                                    "EV": 12,
+                                                    "EVMAX": 25,
+                                                    "EA": 13,
+                                                    "EAMAX": 26,
+                                                    "COU": 12,
+                                                    "INT": 13,
+                                                    "CHA": 25,
+                                                    "AD": 17,
+                                                    "FO": 18,
+                                                    "AT": 14,
+                                                    "PRD": 19,
+                                                    "DESTINY": 2,
+                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
+                                                    "GOLD": 152,
+                                                    "SILVER": 23,
+                                                    "BRONZE": 14,
+                                                    "LEVEL": 2,
+                                                    "SEX": "Homme",
+                                                    "XP": 423,
+                                                    "STUFF": ["Rope", "Potion"],
+                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    character = character_handler.import_character("123456789")
+
+    assert character.adresse == 17
+    assert character.attaque == 14
+    assert character.charisme == 25
+    assert character.competences == ["Ultra strengh", "Iron Fist"]
+    assert character.courage == 12
+    assert character.ea == 13
+    assert character.ea_max == 26
+    assert character.ev == 12
+    assert character.ev_max == 25
+    assert character.experience == 423
+    assert character.force == 18
+    assert character.intelligence == 13
+    assert character.job == "Soldier"
+    assert character.name == "Chuck Norris"
+    assert character.niveau == 2
+    assert character.parade == 19
+    assert character.piecesArgent == 23
+    assert character.piecesBronze == 14
+    assert character.piecesOr == 152
+    assert character.pointsDeDestin == 2
+    assert character.sexe == "Homme"
+    assert character.stuff == ["Rope", "Potion"]
+    assert character.userName == "123456789"
+    assert character.weapons == ["Left fist", "Right fist"]
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
+
+
+def test_mapping_stat():
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    assert character_handler.convert_key(character_handler.key[0]) == "Race"
+    assert character_handler.convert_key(character_handler.key[1]) == "Métier"
+    assert character_handler.convert_key(character_handler.key[2]) == "Energie vitale"
+    assert character_handler.convert_key(character_handler.key[3]) == "Energie vitale maximale"
+    assert character_handler.convert_key(character_handler.key[4]) == "Energie astrale"
+    assert character_handler.convert_key(character_handler.key[5]) == "Energie astrale maximale"
+    assert character_handler.convert_key(character_handler.key[6]) == "Courage"
+    assert character_handler.convert_key(character_handler.key[7]) == "Intelligence"
+    assert character_handler.convert_key(character_handler.key[8]) == "Charisme"
+    assert character_handler.convert_key(character_handler.key[9]) == "Adresse"
+    assert character_handler.convert_key(character_handler.key[10]) == "Force"
+    assert character_handler.convert_key(character_handler.key[11]) == "Attaque"
+    assert character_handler.convert_key(character_handler.key[12]) == "Parade"
+    assert character_handler.convert_key(character_handler.key[13]) == "Points de destin"
+    assert character_handler.convert_key(character_handler.key[14]) == "Compétences"
+    assert character_handler.convert_key(character_handler.key[15]) == "Pièces d'or"
+    assert character_handler.convert_key(character_handler.key[16]) == "Pièces d'argent"
+    assert character_handler.convert_key(character_handler.key[17]) == "Pièces de bronze"
+    assert character_handler.convert_key(character_handler.key[18]) == "Niveau"
+    assert character_handler.convert_key(character_handler.key[19]) == "Sexe"
+    assert character_handler.convert_key(character_handler.key[20]) == "Points d'expérience"
+    assert character_handler.convert_key(character_handler.key[21]) == "Nom"
+    assert character_handler.convert_key(character_handler.key[22]) == "Equipement"
+    assert character_handler.convert_key(character_handler.key[23]) == "Armes"
+    assert character_handler.convert_key(character_handler.key[24]) == "Joueur"
+
+
+def test_mapping_char_stat():
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "NAME": "Chuck Norris",
+                                                    "RACE": "God",
+                                                    "JOB": "Soldier",
+                                                    "EV": 12,
+                                                    "EVMAX": 25,
+                                                    "EA": 13,
+                                                    "EAMAX": 26,
+                                                    "COU": 12,
+                                                    "INT": 13,
+                                                    "CHA": 25,
+                                                    "AD": 17,
+                                                    "FO": 18,
+                                                    "AT": 14,
+                                                    "PRD": 19,
+                                                    "DESTINY": 2,
+                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
+                                                    "GOLD": 152,
+                                                    "SILVER": 23,
+                                                    "BRONZE": 14,
+                                                    "LEVEL": 2,
+                                                    "SEX": "Homme",
+                                                    "XP": 423,
+                                                    "STUFF": ["Rope", "Potion"],
+                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    character = character_handler.import_character("123456789")
+    assert character_handler.mapping_char_stat(character_handler.key[0], character) == "God"
+    assert character_handler.mapping_char_stat(character_handler.key[1], character) == "Soldier"
+    assert character_handler.mapping_char_stat(character_handler.key[2], character) == 12
+    assert character_handler.mapping_char_stat(character_handler.key[3], character) == 25
+    assert character_handler.mapping_char_stat(character_handler.key[4], character) == 13
+    assert character_handler.mapping_char_stat(character_handler.key[5], character) == 26
+    assert character_handler.mapping_char_stat(character_handler.key[6], character) == 12
+    assert character_handler.mapping_char_stat(character_handler.key[7], character) == 13
+    assert character_handler.mapping_char_stat(character_handler.key[8], character) == 25
+    assert character_handler.mapping_char_stat(character_handler.key[9], character) == 17
+    assert character_handler.mapping_char_stat(character_handler.key[10], character) == 18
+    assert character_handler.mapping_char_stat(character_handler.key[11], character) == 14
+    assert character_handler.mapping_char_stat(character_handler.key[12], character) == 19
+    assert character_handler.mapping_char_stat(character_handler.key[13], character) == 2
+    assert character_handler.mapping_char_stat(character_handler.key[14], character) == "['Ultra strengh', 'Iron Fist']"
+    assert character_handler.mapping_char_stat(character_handler.key[15], character) == 152
+    assert character_handler.mapping_char_stat(character_handler.key[16], character) == 23
+    assert character_handler.mapping_char_stat(character_handler.key[17], character) == 14
+    assert character_handler.mapping_char_stat(character_handler.key[18], character) == 2
+    assert character_handler.mapping_char_stat(character_handler.key[19], character) == "Homme"
+    assert character_handler.mapping_char_stat(character_handler.key[20], character) == 423
+    assert character_handler.mapping_char_stat(character_handler.key[21], character) == "Chuck Norris"
+    assert character_handler.mapping_char_stat(character_handler.key[22], character) == "['Rope', 'Potion']"
+    assert character_handler.mapping_char_stat(character_handler.key[23], character) == "['Left fist', 'Right fist']"
+    assert character_handler.mapping_char_stat(character_handler.key[24], character) == "123456789"
+
+
+def test_mapping_char_stat():
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "NAME": "Chuck Norris",
+                                                    "RACE": "God",
+                                                    "JOB": "Soldier",
+                                                    "EV": 12,
+                                                    "EVMAX": 25,
+                                                    "EA": 13,
+                                                    "EAMAX": 26,
+                                                    "COU": 12,
+                                                    "INT": 13,
+                                                    "CHA": 25,
+                                                    "AD": 17,
+                                                    "FO": 18,
+                                                    "AT": 14,
+                                                    "PRD": 19,
+                                                    "DESTINY": 2,
+                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
+                                                    "GOLD": 152,
+                                                    "SILVER": 23,
+                                                    "BRONZE": 14,
+                                                    "LEVEL": 2,
+                                                    "SEX": "Homme",
+                                                    "XP": 423,
+                                                    "STUFF": ["Rope", "Potion"],
+                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+    character = character_handler.import_character("123456789")
+    embed = character_handler.display_list_infos(0x00ff00, character, ["SKILLS", "RACE"], "Title")
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Title"
+    assert len(embed.fields) == 2
+    assert embed.fields[0].name == "Compétences"
+    assert embed.fields[0].value == "['Ultra strengh', 'Iron Fist']"
+    assert embed.fields[1].name == "Race"
+    assert embed.fields[1].value == "God"
+
+def test_mapping_char_stat_life_mana():
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "NAME": "Chuck Norris",
+                                                    "RACE": "God",
+                                                    "JOB": "Soldier",
+                                                    "EV": "12",
+                                                    "EVMAX": "25",
+                                                    "EA": "13",
+                                                    "EAMAX": "26",
+                                                    "COU": 12,
+                                                    "INT": 13,
+                                                    "CHA": 25,
+                                                    "AD": 17,
+                                                    "FO": 18,
+                                                    "AT": 14,
+                                                    "PRD": 19,
+                                                    "DESTINY": 2,
+                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
+                                                    "GOLD": 152,
+                                                    "SILVER": 23,
+                                                    "BRONZE": 14,
+                                                    "LEVEL": 2,
+                                                    "SEX": "Homme",
+                                                    "XP": 423,
+                                                    "STUFF": ["Rope", "Potion"],
+                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+    character = character_handler.import_character("123456789")
+    embed = character_handler.display_list_infos(0x00ff00, character, ["EA", "EV"])
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 2
+    assert embed.fields[0].name == "Energie astrale"
+    assert embed.fields[0].value == "13/26"
+    assert embed.fields[1].name == "Energie vitale"
+    assert embed.fields[1].value == "12/25"
+
+def test_display_char():
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "NAME": "Chuck Norris",
+                                                    "RACE": "God",
+                                                    "JOB": "Soldier",
+                                                    "EV": "12",
+                                                    "EVMAX": "25",
+                                                    "EA": "13",
+                                                    "EAMAX": "26",
+                                                    "COU": 12,
+                                                    "INT": 13,
+                                                    "CHA": 25,
+                                                    "AD": 17,
+                                                    "FO": 18,
+                                                    "AT": 14,
+                                                    "PRD": 19,
+                                                    "DESTINY": 2,
+                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
+                                                    "GOLD": "152",
+                                                    "SILVER": "23",
+                                                    "BRONZE": "14",
+                                                    "LEVEL": 2,
+                                                    "SEX": "Homme",
+                                                    "XP": 423,
+                                                    "STUFF": ["Rope", "Potion"],
+                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+    character = character_handler.import_character("123456789")
+
+    embed = character_handler.display_basic_infos(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 5
+
+    embed = character_handler.display_basic_stats(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 7
+    embed = character_handler.display_basic_stats(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 7
+
+    embed = character_handler.display_attack_info(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 3
+    embed = character_handler.display_attack_info(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 3
+
+    embed = character_handler.display_money_infos(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 1
+    assert embed.fields[0].name == "Pièces d'or"
+    assert embed.fields[0].value == "152/23/14"
+    embed = character_handler.display_money_infos(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 1
+    assert embed.fields[0].name == "Pièces d'or"
+    assert embed.fields[0].value == "152/23/14"
+
+    embed = character_handler.display_skills(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 1
+    embed = character_handler.display_skills(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 1
+
+    embed = character_handler.display_stuff(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 1
+    embed = character_handler.display_stuff(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 1
+
+    embed = character_handler.display_weapons(character, True)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title == "Chuck Norris"
+    assert len(embed.fields) == 1
+    embed = character_handler.display_weapons(character)
+    assert embed.color == discord.colour.Color(0x00ff00)
+    assert embed.title is None
+    assert len(embed.fields) == 1
