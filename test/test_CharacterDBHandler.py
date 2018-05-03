@@ -112,66 +112,6 @@ def test_mapping_stat():
     assert character_handler.convert_key(character_handler.key[24]) == "Joueur"
 
 
-def test_mapping_char_stat():
-    db_handler = src.Database.DbHandler.DbHandler()
-    db_handler.data = {"name": "kornettoh",
-                       "settings": {"characters": [{"PLAYER": "123456789",
-                                                    "NAME": "Chuck Norris",
-                                                    "RACE": "God",
-                                                    "JOB": "Soldier",
-                                                    "EV": 12,
-                                                    "EVMAX": 25,
-                                                    "EA": 13,
-                                                    "EAMAX": 26,
-                                                    "COU": 12,
-                                                    "INT": 13,
-                                                    "CHA": 25,
-                                                    "AD": 17,
-                                                    "FO": 18,
-                                                    "AT": 14,
-                                                    "PRD": 19,
-                                                    "DESTINY": 2,
-                                                    "SKILLS": ["Ultra strengh", "Iron Fist"],
-                                                    "GOLD": 152,
-                                                    "SILVER": 23,
-                                                    "BRONZE": 14,
-                                                    "LEVEL": 2,
-                                                    "SEX": "Homme",
-                                                    "XP": 423,
-                                                    "STUFF": ["Rope", "Potion"],
-                                                    "WEAPONS": ["Left fist", "Right fist"]}]}}
-
-    character_handler = src.CharacterDBHandler.CharacterDBHandler()
-    character_handler.db_handler = db_handler
-
-    character = character_handler.import_character("123456789")
-    assert character_handler.mapping_char_stat(character_handler.key[0], character) == "God"
-    assert character_handler.mapping_char_stat(character_handler.key[1], character) == "Soldier"
-    assert character_handler.mapping_char_stat(character_handler.key[2], character) == 12
-    assert character_handler.mapping_char_stat(character_handler.key[3], character) == 25
-    assert character_handler.mapping_char_stat(character_handler.key[4], character) == 13
-    assert character_handler.mapping_char_stat(character_handler.key[5], character) == 26
-    assert character_handler.mapping_char_stat(character_handler.key[6], character) == 12
-    assert character_handler.mapping_char_stat(character_handler.key[7], character) == 13
-    assert character_handler.mapping_char_stat(character_handler.key[8], character) == 25
-    assert character_handler.mapping_char_stat(character_handler.key[9], character) == 17
-    assert character_handler.mapping_char_stat(character_handler.key[10], character) == 18
-    assert character_handler.mapping_char_stat(character_handler.key[11], character) == 14
-    assert character_handler.mapping_char_stat(character_handler.key[12], character) == 19
-    assert character_handler.mapping_char_stat(character_handler.key[13], character) == 2
-    assert character_handler.mapping_char_stat(character_handler.key[14], character) == "['Ultra strengh', 'Iron Fist']"
-    assert character_handler.mapping_char_stat(character_handler.key[15], character) == 152
-    assert character_handler.mapping_char_stat(character_handler.key[16], character) == 23
-    assert character_handler.mapping_char_stat(character_handler.key[17], character) == 14
-    assert character_handler.mapping_char_stat(character_handler.key[18], character) == 2
-    assert character_handler.mapping_char_stat(character_handler.key[19], character) == "Homme"
-    assert character_handler.mapping_char_stat(character_handler.key[20], character) == 423
-    assert character_handler.mapping_char_stat(character_handler.key[21], character) == "Chuck Norris"
-    assert character_handler.mapping_char_stat(character_handler.key[22], character) == "['Rope', 'Potion']"
-    assert character_handler.mapping_char_stat(character_handler.key[23], character) == "['Left fist', 'Right fist']"
-    assert character_handler.mapping_char_stat(character_handler.key[24], character) == "123456789"
-
-
 def test_mapping_display_list_info():
     db_handler = src.Database.DbHandler.DbHandler()
     db_handler.data = {"name": "kornettoh",
@@ -204,7 +144,12 @@ def test_mapping_display_list_info():
     character_handler = src.CharacterDBHandler.CharacterDBHandler()
     character_handler.db_handler = db_handler
     character = character_handler.import_character("123456789")
-    embed = character_handler.display_list_infos(0x00ff00, character, ["SKILLS", "RACE"], "Title")
+    embed = character_handler.display_list_infos(0x00ff00,
+                                                 [character_handler.DisplayItem(str(character.competences),
+                                                                                character_handler.mapping["SKILLS"]),
+                                                  character_handler.DisplayItem(character.race,
+                                                                                character_handler.mapping["RACE"])],
+                                                 "Title")
     assert embed.color == discord.colour.Color(0x00ff00)
     assert embed.title == "Title"
     assert len(embed.fields) == 2
@@ -246,7 +191,17 @@ def test_mapping_char_stat_life_mana():
     character_handler = src.CharacterDBHandler.CharacterDBHandler()
     character_handler.db_handler = db_handler
     character = character_handler.import_character("123456789")
-    embed = character_handler.display_list_infos(0x00ff00, character, ["EA", "EV"])
+    embed = character_handler.display_list_infos(0x00ff00,
+                                                 [character_handler.DisplayItem(
+                                                     character_handler.format_gauge(
+                                                         character.ea,
+                                                         character.ea_max),
+                                                     character_handler.mapping["EA"]),
+                                                     character_handler.DisplayItem(
+                                                         character_handler.format_gauge(
+                                                             character.ev,
+                                                             character.ev_max),
+                                                         character_handler.mapping["EV"])])
     assert embed.color == discord.colour.Color(0x00ff00)
     assert embed.title is None
     assert len(embed.fields) == 2
@@ -294,15 +249,6 @@ def test_display_char():
     assert embed.title == "Chuck Norris"
     assert len(embed.fields) == 5
 
-    embed = character_handler.display_basic_stats(character, True)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title == "Chuck Norris"
-    assert len(embed.fields) == 7
-    embed = character_handler.display_basic_stats(character)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title is None
-    assert len(embed.fields) == 7
-
     embed = character_handler.display_attack_info(character, True)
     assert embed.color == discord.colour.Color(0x00ff00)
     assert embed.title == "Chuck Norris"
@@ -325,32 +271,33 @@ def test_display_char():
     assert embed.fields[0].name == "Pièces d'or"
     assert embed.fields[0].value == "152/23/14"
 
-    embed = character_handler.display_skills(character, True)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title == "Chuck Norris"
-    assert len(embed.fields) == 1
-    embed = character_handler.display_skills(character)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title is None
-    assert len(embed.fields) == 1
+    #Specific formatting
+    embed = character_handler.display_minimum_info_character(character)
+    assert len(embed) == 1
+    assert embed[0].color == discord.colour.Color(0x00ff00)
+    assert embed[0].title == "Chuck Norris"
+    assert len(embed[0].fields) == 7
 
-    embed = character_handler.display_stuff(character, True)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title == "Chuck Norris"
-    assert len(embed.fields) == 1
-    embed = character_handler.display_stuff(character)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title is None
-    assert len(embed.fields) == 1
+    embed = character_handler.display_skills_character(character)
+    assert len(embed) == 1
+    assert embed[0].color == discord.colour.Color(0x00ff00)
+    assert embed[0].title == "Chuck Norris"
+    assert len(embed[0].fields) == 1
 
-    embed = character_handler.display_weapons(character, True)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title == "Chuck Norris"
-    assert len(embed.fields) == 1
-    embed = character_handler.display_weapons(character)
-    assert embed.color == discord.colour.Color(0x00ff00)
-    assert embed.title is None
-    assert len(embed.fields) == 1
+    embed = character_handler.display_stuff_character(character)
+    assert len(embed) == 1
+    assert embed[0].color == discord.colour.Color(0x00ff00)
+    assert embed[0].title == "Chuck Norris"
+    assert len(embed[0].fields) == 1
+
+    embed = character_handler.display_weapons_character(character)
+    assert len(embed) == 1
+    assert embed[0].color == discord.colour.Color(0x00ff00)
+    assert embed[0].title == "Chuck Norris"
+    assert len(embed[0].fields) == 1
+
+    embed = character_handler.display_info_character(character)
+    assert len(embed) == 5
 
 
 def test_money_all_operations():
@@ -566,6 +513,7 @@ def test_money_error_with_db():
 
 
 def test_compute_ev():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     json = {"PLAYER": "123456789",
             "NAME": "Chuck Norris",
             "RACE": "God",
@@ -594,15 +542,23 @@ def test_compute_ev():
 
     character_handler = src.CharacterDBHandler.CharacterDBHandler()
 
-
-    character_handler.compute_ev(1, json)
+    assert character_handler.compute_ev(1, json)
     assert json["EV"] == "13"
 
-    character_handler.compute_ev(-1, json)
+    assert character_handler.compute_ev(-1, json)
     assert json["EV"] == "12"
 
-    character_handler.compute_ev(100, json)
+    assert character_handler.compute_ev(100, json)
     assert json["EV"] == "25"
 
-    character_handler.compute_ev(-100, json)
+    assert character_handler.compute_ev(-100, json)
     assert json["EV"] == "0"
+
+    assert character_handler.compute_ev(-100, json)
+    assert json["EV"] == "0"
+
+    json["EV"] = "toto"
+    assert not character_handler.compute_ev(-100, json)
+    assert len(src.Error.ErrorManager.ErrorManager.error_log)
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER

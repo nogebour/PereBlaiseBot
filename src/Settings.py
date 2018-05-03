@@ -120,5 +120,4 @@ class SettingsHandler:
         return True
 
     def get_character_db_handler(self):
-        db_handler = CharacterDBHandler()
-        return db_handler
+        return CharacterDBHandler()
