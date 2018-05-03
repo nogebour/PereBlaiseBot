@@ -11,7 +11,7 @@
 I would like to thanks different persons for this project.
 - Damien, Paul for their contributions by bringing ideas and support.
 - Pen of Chaos, author of [Naheulbeuk](https://www.naheulbeuk.com), the role playing game used on this project.
-- Alexandre Astier, creator of [Kaamelott](https://en.wikipedia.org/wiki/Kaamelott). [Pere Blaise](http://fr.kaamelott-officiel.wikia.com/wiki/P%C3%A8re_Blaise) is a character of this finction.
+- Alexandre Astier, creator of [Kaamelott](https://en.wikipedia.org/wiki/Kaamelott). [Pere Blaise](http://fr.kaamelott-officiel.wikia.com/wiki/P%C3%A8re_Blaise) is a character of this fiction.
 
 ## GitHubPages Generator
 
