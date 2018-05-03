@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 
-from src.CharacterDBHandler import CharacterDBHandler
-from src.DbHandler import DbHandler
+from .CharacterDBHandler import CharacterDBHandler
+from src.Database.DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
+
 
 
 class SettingsHandler:
@@ -14,11 +16,9 @@ class SettingsHandler:
     def __init__(self):
         self.data = None
         self.db_handler = None
-        self.error_log = []
         self.start_time = datetime.now()
         self.current_time = datetime.now()
         self.players = []
-
         self.db_handler = DbHandler()
 
     def initialize(self):
@@ -55,28 +55,22 @@ class SettingsHandler:
         elif quality == "excellent":
             return int(delta / 60)
         else:
-            self.error_log.append({"error_code": 3,
-                                   "error_msg": "Invalid Rest Quality",
-                                   "context": "compute_rest",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.INVALID_REST_QUALITY, "compute_rest")
             raise ValueError("Choix entre 'normal'|'bon'|'excellent'")
 
     # 'normale','rapide','barbare'
-    def compute_walk(self, rythme, delta):
+    def compute_walk(self, speed, delta):
         injury = 0
         if delta > 480:
             injury += int(1+(delta-480)/60)
-        if rythme == "normale":
+        if speed == "normale":
             injury += 0
-        elif rythme == "rapide":
+        elif speed == "rapide":
             injury += int(delta / 240) + 1
-        elif rythme == "barbare":
+        elif speed == "barbare":
             injury += int(delta / 120) + 1
         else:
-            self.error_log.append({"error_code": 4,
-                                   "error_msg": "Invalid Walk Quality",
-                                   "context": "compute_walk",
-                                   "timestamp": datetime.now()})
+            ErrorManager().add_error(ErrorCode.INVALID_WALK_SPEED, "compute_walk")
             raise ValueError("Choix entre 'normale'|'rapide'|'barbare'")
         return injury
 
@@ -85,16 +79,15 @@ class SettingsHandler:
         try:
             delta = int(length)
         except ValueError:
-            print("Not an integer")
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "handle_rest")
             return False
 
         try:
             heal = self.compute_rest(quality, delta)
-        except ValueError as e:
-            embed.add_field(value=str(e))
+        except ValueError:
             return False
 
-        players = db_handler.increaseEvGroup(heal)
+        players = db_handler.increase_ev_group(heal)
         for a_player in players:
             embed.add_field(
                 name= "Soin enregistrée",
@@ -103,22 +96,21 @@ class SettingsHandler:
                 inline=False)
         return True
 
-    def handle_walk(self, rythme, length, embed):
-        db_handler = self.get_character_db_handler()
+    def handle_walk(self, speed, length, embed):
+        character_db_handler = self.get_character_db_handler()
         delta = 0
         try:
             delta = int(length)
         except ValueError:
-            print("Not an integer")
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "handle_walk")
             return False
         injury = 0
         try:
-            injury = self.compute_walk(rythme, delta)
-        except ValueError as e:
-            embed.add_field(value=str(e))
+            injury = self.compute_walk(speed, delta)
+        except ValueError:
             return False
 
-        players = db_handler.decreaseEvGroup(injury)
+        players = character_db_handler.decrease_ev_group(injury)
         for a_player in players:
             embed.add_field(
                 name= "Blessure enregistrée",
@@ -128,5 +120,4 @@ class SettingsHandler:
         return True
 
     def get_character_db_handler(self):
-        db_handler = CharacterDBHandler()
-        return db_handler
+        return CharacterDBHandler()

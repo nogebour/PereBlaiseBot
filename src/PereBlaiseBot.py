@@ -5,10 +5,10 @@ import re
 
 from .CharacterDBHandler import CharacterDBHandler
 from .Settings import SettingsHandler
-from .DbHandler import DbHandler
+from src.Database.DbHandler import DbHandler
 
 HELP_CHANNEL = '387149097037070346'
-MJ_CHANNEL = '386082775066869760'
+MJ_CHANNEL = '411248354534752256'
 MJ_ID = '294164488427405312'
 
 class DiscordMessage:
@@ -86,7 +86,7 @@ class PereBlaiseBot:
     def applyHeal(self, embed, user, value):
         testDb = CharacterDBHandler()
         testDb.initialize()
-        remainingLife = testDb.increaseEv(user,value)
+        remainingLife = testDb.increase_ev(user, value)
         embed.add_field(
             name=("Soin enregistrée"),
             value="Le joueur <@" + user + "> a soigné " + str(
@@ -97,7 +97,7 @@ class PereBlaiseBot:
     def applyInjury(self, embed, user, value):
         testDb = CharacterDBHandler()
         testDb.initialize()
-        remainingLife = testDb.decreaseEv(user,value)
+        remainingLife = testDb.decrease_ev(user, value)
         embed.add_field(
             name=("Blessure enregistrée"),
             value="Le joueur <@" + user + "> a recu " + str(
@@ -230,21 +230,21 @@ class PereBlaiseBot:
             elif args[1] == 'liste' and (args[2] == "armes" or args[2] == "arme"):
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embeds = testDb.displayWeaponsCharacter(testDb.importCharacter(message.author.id))
+                embeds = testDb.display_weapons_character(testDb.import_character(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and args[2] == "stuff":
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embeds = testDb.displayStuffCharacter(testDb.importCharacter(message.author.id))
+                embeds = testDb.display_stuff_character(testDb.import_character(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'liste' and (args[2] == "skill" or args[2] == "skills"):
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embeds = testDb.displaySkillsCharacter(testDb.importCharacter(message.author.id))
+                embeds = testDb.display_skills_character(testDb.import_character(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
@@ -256,21 +256,21 @@ class PereBlaiseBot:
                         userId = tmpUserId
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embeds = testDb.displayMinimumInfoCharacter(testDb.importCharacter(userId))
+                embeds = testDb.display_minimum_info_character(testDb.import_character(userId))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'full' and (args[2] == 'info' or args[2] == 'infos'):
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embeds = testDb.displayInfoCharacter(testDb.importCharacter(message.author.id))
+                embeds = testDb.display_info_character(testDb.import_character(message.author.id))
                 for anEmbed in embeds:
                     returnedMessage.append(DiscordMessage(message.channel, embed=anEmbed))
 
             elif args[1] == 'bourse' and len(args) == 2:
                 testDb = CharacterDBHandler()
                 testDb.initialize()
-                embed = testDb.displayMoneyInfos(testDb.importCharacter(message.author.id))
+                embed = testDb.display_money_infos(testDb.import_character(message.author.id))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embed))
 
             elif args[1] == 'bourse':
@@ -279,13 +279,12 @@ class PereBlaiseBot:
                     value = self.getValueStr(message.content)
                     testDb = CharacterDBHandler()
                     testDb.initialize()
-                    gold, silver, bronze = testDb.moneyOperation(message.author.id, value)
+                    gold, silver, bronze = testDb.money_operation(message.author.id, value)
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(
                         name=("Operations comptables enregistrés"),
-                        value="Le joueur "+message.author.name+" a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
+                        value="<@"+MJ_ID+">: Le joueur <@"+message.author.id+"> a maintenant "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
                         inline=False)
-                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == 'MJbourse':
@@ -294,13 +293,13 @@ class PereBlaiseBot:
                     user, value = self.getUserValueStr(message.content)
                     testDb = CharacterDBHandler()
                     testDb.initialize()
-                    gold, silver, bronze = testDb.moneyOperation(user, value)
+                    gold, silver, bronze = testDb.money_operation(user, value)
                     embedResult = discord.Embed(color=0x00ff00)
                     embedResult.add_field(
                         name=("Operations comptables enregistrés"),
-                        value="Le joueur <@"+user+"> a "+str(gold)+" PO, "+str(silver)+" PA et "+str(bronze)+" PB.",
+                        value="<@" + MJ_ID + ">: Le joueur <@" + user + "> a maintenant " + str(gold) +
+                              " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
                         inline=False)
-                    returnedMessage.append(DiscordMessage(client.get_channel(MJ_CHANNEL), embed=embedResult, content="<@"+MJ_ID+">"))
                 returnedMessage.append(DiscordMessage(message.channel, embed=embedResult))
 
             elif args[1] == "temps" and len(args) == 2:
