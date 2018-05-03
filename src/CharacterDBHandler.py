@@ -1,7 +1,7 @@
 import discord
 
-from src.Database.DbHandler import DbHandler
-
+from .Database.DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
 
 class Character:
 
@@ -241,36 +241,42 @@ class CharacterDBHandler:
 
     def money_operation(self, username, amount):
         the_char = self.db_handler.read_file_for_character(username)
-        print(the_char)
         operations = amount.split("/")
-        if len(operations) >= 1:
-            tmp_gold = int(the_char["GOLD"]) + int(operations[0])
-            if tmp_gold < 0:
-                tmp_gold = 0
-            the_char["GOLD"] = str(tmp_gold)
-        if len(operations) >= 2:
-            tmp_silver = int(the_char["SILVER"]) + int(operations[1])
-            if tmp_silver < 0:
-                tmp_silver = 0
-            the_char["SILVER"] = str(tmp_silver)
-        if len(operations) >= 3:
-            tmp_bronze = int(the_char["BRONZE"]) + int(operations[2])
-            if tmp_bronze < 0:
-                tmp_bronze = 0
-            the_char["BRONZE"] = str(tmp_bronze)
-        self.db_handler.update_game()
-        return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
+        try:
+            if len(operations) >= 1:
+                tmp_gold = int(the_char["GOLD"]) + int(operations[0])
+                if tmp_gold < 0:
+                    tmp_gold = 0
+                the_char["GOLD"] = str(tmp_gold)
+            if len(operations) >= 2:
+                tmp_silver = int(the_char["SILVER"]) + int(operations[1])
+                if tmp_silver < 0:
+                    tmp_silver = 0
+                the_char["SILVER"] = str(tmp_silver)
+            if len(operations) >= 3:
+                tmp_bronze = int(the_char["BRONZE"]) + int(operations[2])
+                if tmp_bronze < 0:
+                    tmp_bronze = 0
+                the_char["BRONZE"] = str(tmp_bronze)
+            if self.db_handler.update_game():
+                return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "money_operation")
+        return "Error", "Error", "Error"
 
     def increase_ev(self, user_name, amount):
         char_sheet = self.db_handler.read_file_for_character(user_name)
+        self.compute_ev(amount, char_sheet)
+        self.db_handler.update_game()
+        return char_sheet["EV"]
+
+    def compute_ev(self, amount, char_sheet):
         tmp_ev = int(char_sheet["EV"]) + amount
         if tmp_ev > int(char_sheet["EVMAX"]):
             tmp_ev = int(char_sheet["EVMAX"])
         if tmp_ev < 0:
             tmp_ev = 0
         char_sheet["EV"] = str(tmp_ev)
-        self.db_handler.update_game()
-        return char_sheet["EV"]
 
     def decrease_ev(self, user_name, amount):
         return self.increase_ev(user_name, (0 - amount))
