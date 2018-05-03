@@ -48,7 +48,6 @@ class DbHandler:
             result = False
 
         client_mongo_db.close()
-        print(self.data)
         return result
 
     def save_snapshot_game(self):

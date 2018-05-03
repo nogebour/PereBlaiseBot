@@ -271,7 +271,7 @@ def test_display_char():
     assert embed.fields[0].name == "Pièces d'or"
     assert embed.fields[0].value == "152/23/14"
 
-    #Specific formatting
+    #  Specific formatting
     embed = character_handler.display_minimum_info_character(character)
     assert len(embed) == 1
     assert embed[0].color == discord.colour.Color(0x00ff00)
@@ -562,3 +562,43 @@ def test_compute_ev():
     assert len(src.Error.ErrorManager.ErrorManager.error_log)
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+
+
+def test_ev_player():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    db_handler.update_game = MagicMock(return_value=True)
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    result = character_handler.decrease_ev("123456789", 10)
+    assert (db_handler.data["settings"]["characters"][0]["EV"] == "2" == result)
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
+
+
+def test_ev_group():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    db_handler.update_game = MagicMock(return_value=True)
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    result = character_handler.decrease_ev_group(10)
+    print (result)
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)

@@ -234,21 +234,11 @@ class CharacterDBHandler:
         the_char = self.db_handler.read_file_for_character(username)
         operations = amount.split("/")
         try:
-            if len(operations) >= 1:
-                tmp_gold = int(the_char["GOLD"]) + int(operations[0])
-                if tmp_gold < 0:
-                    tmp_gold = 0
-                the_char["GOLD"] = str(tmp_gold)
+            the_char["GOLD"] = str(max(0, int(the_char["GOLD"]) + int(operations[0])))
             if len(operations) >= 2:
-                tmp_silver = int(the_char["SILVER"]) + int(operations[1])
-                if tmp_silver < 0:
-                    tmp_silver = 0
-                the_char["SILVER"] = str(tmp_silver)
+                the_char["SILVER"] = str(max(0, int(the_char["SILVER"]) + int(operations[1])))
             if len(operations) >= 3:
-                tmp_bronze = int(the_char["BRONZE"]) + int(operations[2])
-                if tmp_bronze < 0:
-                    tmp_bronze = 0
-                the_char["BRONZE"] = str(tmp_bronze)
+                the_char["BRONZE"] = str(max(0, int(the_char["BRONZE"]) + int(operations[2])))
             if self.db_handler.update_game():
                 return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
         except ValueError:
@@ -257,9 +247,10 @@ class CharacterDBHandler:
 
     def increase_ev(self, user_name, amount):
         char_sheet = self.db_handler.read_file_for_character(user_name)
-        self.compute_ev(amount, char_sheet)
-        self.db_handler.update_game()
-        return char_sheet["EV"]
+        if self.compute_ev(amount, char_sheet):
+            if self.db_handler.update_game():
+                return char_sheet["EV"]
+        return None
 
     def compute_ev(self, amount, char_sheet):
         try:
@@ -269,28 +260,19 @@ class CharacterDBHandler:
             ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev")
             return False
 
-        tmp_ev = ev + amount
-        if tmp_ev > ev_max:
-            tmp_ev = ev_max
-        if tmp_ev < 0:
-            tmp_ev = 0
-        char_sheet["EV"] = str(tmp_ev)
+        char_sheet["EV"] = str(max(0, min(ev+amount, ev_max)))
         return True
 
     def decrease_ev(self, user_name, amount):
         return self.increase_ev(user_name, (0 - amount))
 
     def increase_ev_group(self, amount):
-        print("increase")
         result = []
         for player in self.db_handler.data['settings']['characters']:
-            print("Decrease player" + player["PLAYER"])
             self.compute_ev(amount, player)
             result.append({'id': player["PLAYER"], 'remainingLife': player["EV"]})
-        print('Save Changes')
         self.db_handler.update_game()
         return result
 
     def decrease_ev_group(self, amount):
-        print("Decrease")
-        return self.increase_ev_group((0 - amount))
+        return self.increase_ev_group(0 - amount)
