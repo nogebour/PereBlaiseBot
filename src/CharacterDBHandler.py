@@ -1,40 +1,67 @@
 import discord
+from enum import Enum
 
-from src.Database.DbHandler import DbHandler
-
+from .Database.DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
 
 class Character:
-    userName = None
-    name = None
-    job = None
-    ev = None
-    evMax = None
-    ea = None
-    eaMax = None
-    courage = None
-    intelligence = None
-    charisme = None
-    adresse = None
-    force = None
-    attaque = None
-    parade = None
-    pointsDeDestin = None
-    competences = []
-    piecesOr = None
-    piecesArgent = None
-    piecesBronze = None
-    niveau = None
-    sexe = None
-    experience = None
-    stuff = []
-    weapons = []
+
+    def __init__(self):
+        self.userName = None
+        self.name = None
+        self.job = None
+        self.ev = None
+        self.ev_max = None
+        self.ea = None
+        self.ea_max = None
+        self.courage = None
+        self.intelligence = None
+        self.charisme = None
+        self.adresse = None
+        self.force = None
+        self.attaque = None
+        self.parade = None
+        self.pointsDeDestin = None
+        self.competences = []
+        self.piecesOr = None
+        self.piecesArgent = None
+        self.piecesBronze = None
+        self.niveau = None
+        self.sexe = None
+        self.experience = None
+        self.stuff = []
+        self.weapons = []
 
 
 class CharacterDBHandler:
     def __init__(self):
-        self.dbHandler = DbHandler()
+        self.db_handler = DbHandler()
         self.data = None
-        self.key = ["RACE", "JOB", "EV", "EVMAX", "EA", "EAMAX", "COU", "INT", "CHA", "AD", "FO", "AT", "PRD", "DESTINY", "SKILLS", "GOLD", "SILVER", "BRONZE", "LEVEL", "SEX", "XP", "NAME", "STUFF", "WEAPONS", "PLAYER"]
+        self.key = ["RACE",
+                    "JOB",
+                    "EV",
+                    "EVMAX",
+                    "EA",
+                    "EAMAX",
+                    "COU",
+                    "INT",
+                    "CHA",
+                    "AD",
+                    "FO",
+                    "AT",
+                    "PRD",
+                    "DESTINY",
+                    "SKILLS",
+                    "GOLD",
+                    "SILVER",
+                    "BRONZE",
+                    "LEVEL",
+                    "SEX",
+                    "XP",
+                    "NAME",
+                    "STUFF",
+                    "WEAPONS",
+                    "PLAYER"]
         self.mapping = {self.key[0]: "Race",
                         self.key[1]: "Métier",
                         self.key[2]: "Energie vitale",
@@ -59,76 +86,28 @@ class CharacterDBHandler:
                         self.key[21]: "Nom",
                         self.key[22]: "Equipement",
                         self.key[23]: "Armes",
-                        self.key[23]: "Joueur"}
+                        self.key[24]: "Joueur"}
+
+    class DisplayItem:
+        def __init__(self, value, label):
+            self.value = value
+            self.label = label
 
     def initialize(self):
-        self.dbHandler.retrieve_game()
-        self.data = self.dbHandler.data
-
-    def mappingCharStat(self, key, character):
-        if key == self.key[0]:
-            return character.race
-        elif key == self.key[1]:
-            return character.job
-        elif key == self.key[2]:
-            return character.ev
-        elif key == self.key[3]:
-            return character.evMax
-        elif key == self.key[4]:
-            return character.ea
-        elif key == self.key[5]:
-            return character.eaMax
-        elif key == self.key[6]:
-            return character.courage
-        elif key == self.key[7]:
-            return character.intelligence
-        elif key == self.key[8]:
-            return character.charisme
-        elif key == self.key[9]:
-            return character.adresse
-        elif key == self.key[10]:
-            return character.force
-        elif key == self.key[11]:
-            return character.attaque
-        elif key == self.key[12]:
-            return character.parade
-        elif key == self.key[13]:
-            return character.pointsDeDestin
-        elif key == self.key[14]:
-            return str(character.competences)
-        elif key == self.key[15]:
-            return character.piecesOr
-        elif key == self.key[16]:
-            return character.piecesArgent
-        elif key == self.key[17]:
-            return character.piecesBronze
-        elif key == self.key[18]:
-            return character.niveau
-        elif key == self.key[19]:
-            return character.sexe
-        elif key == self.key[20]:
-            return character.experience
-        elif key == self.key[21]:
-            return character.name
-        elif key == self.key[22]:
-            return str(character.stuff)
-        elif key == self.key[23]:
-            return str(character.weapons)
-        elif key == self.key[24]:
-            return str(character.userName)
+        self.db_handler.retrieve_game()
+        self.data = self.db_handler.data
 
     def import_character(self, user_name):
-        values = self.dbHandler.read_file_for_character(user_name)
+        values = self.db_handler.read_file_for_character(user_name)
         new_character = Character()
         new_character.userName = values["PLAYER"]
-        new_character.name = values["NAME"]
         new_character.name = values["NAME"]
         new_character.race = values["RACE"]
         new_character.job = values["JOB"]
         new_character.ev = values["EV"]
-        new_character.evMax = values["EVMAX"]
+        new_character.ev_max = values["EVMAX"]
         new_character.ea = values["EA"]
-        new_character.eaMax = values["EAMAX"]
+        new_character.ea_max = values["EAMAX"]
         new_character.courage = values["COU"]
         new_character.intelligence = values["INT"]
         new_character.charisme = values["CHA"]
@@ -152,38 +131,78 @@ class CharacterDBHandler:
         return self.mapping[key]
 
     def display_basic_infos(self, character):
-        return self.display_list_infos(0x00ff00, character, ["RACE", "JOB", "SEX", "LEVEL", "XP"], character.name)
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(character.race, self.mapping["RACE"]),
+                                        self.DisplayItem(character.job, self.mapping["JOB"]),
+                                        self.DisplayItem(character.sexe, self.mapping["SEX"]),
+                                        self.DisplayItem(character.niveau, self.mapping["LEVEL"]),
+                                        self.DisplayItem(character.experience, self.mapping["XP"])],
+                                       character.name)
 
     def display_basic_stats(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["EV", "EA", "DESTINY", "GOLD", "AT", "PRD", "AD"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(self.format_gauge(character.ev,
+                                                                           character.ev_max),
+                                                         self.mapping["EV"]),
+                                        self.DisplayItem(self.format_gauge(character.ea,
+                                                                           character.ea_max),
+                                                         self.mapping["EA"]),
+                                        self.DisplayItem(character.pointsDeDestin,
+                                                         self.mapping["DESTINY"]),
+                                        self.DisplayItem(self.format_money(character.piecesOr,
+                                                                           character.piecesArgent,
+                                                                           character.piecesBronze),
+                                                         self.mapping["GOLD"]),
+                                        self.DisplayItem(character.attaque,
+                                                         self.mapping["AT"]),
+                                        self.DisplayItem(character.parade,
+                                                         self.mapping["PRD"]),
+                                        self.DisplayItem(character.adresse,
+                                                         self.mapping["AD"])],
+                                       (character.name if display_name else None))
 
     def display_attack_info(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["AT", "PRD", "AD"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(character.attaque, self.mapping["AT"]),
+                                        self.DisplayItem(character.parade, self.mapping["PRD"]),
+                                        self.DisplayItem(character.adresse, self.mapping["AD"])],
+                                       (character.name if display_name else None))
 
     def display_money_infos(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["GOLD"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(self.format_money(character.piecesOr,
+                                                                           character.piecesArgent,
+                                                                           character.piecesBronze),
+                                                         self.mapping["GOLD"])],
+                                       (character.name if display_name else None))
 
     def display_skills(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["SKILLS"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(str(character.competences), self.mapping["SKILLS"])],
+                                       (character.name if display_name else None))
 
     def display_stuff(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["STUFF"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(str(character.stuff), self.mapping["STUFF"])],
+                                       (character.name if display_name else None))
 
     def display_weapons(self, character, display_name=False):
-        return self.display_list_infos(0x00ff00, character, ["WEAPONS"], (character.name if display_name else None))
+        return self.display_list_infos(0x00ff00,
+                                       [self.DisplayItem(str(character.weapons), self.mapping["WEAPONS"])],
+                                       (character.name if display_name else None))
 
-    def display_list_infos(self, color, character, list_stats, title=None):
+    def format_gauge(self, value, max_value, min_value=0):
+        return str(max(int(value), int(min_value)))+"/"+str(max_value)
+
+    def format_money(self, gold, silver, bronze):
+        return str(gold)+"/"+str(silver)+"/"+str(bronze)
+
+    def display_list_infos(self, color, list_stats, title=None):
         embed_formated = discord.Embed(color=color, title=title)
         for stat in list_stats:
-            str_value = self.mappingCharStat(stat, character)
-            if stat == "EA" or stat == "EV":
-                str_value = (self.mappingCharStat(stat, character) + "/" + self.mappingCharStat(stat+"MAX", character))
-            elif stat == "GOLD":
-                str_value = (self.mappingCharStat("GOLD", character) + "/" + self.mappingCharStat("SILVER", character) +
-                             "/" + self.mappingCharStat("BRONZE", character))
             embed_formated.add_field(
-                name=self.mapping[stat],
-                value=str_value,
+                name=stat.label,
+                value=stat.value,
                 inline=True)
         return embed_formated
 
@@ -204,64 +223,65 @@ class CharacterDBHandler:
         return embeds
 
     def display_info_character(self, character):
-        embeds = [self.display_list_infos(0x00ff00, character, ["RACE", "JOB", "SEX", "GOLD", "LEVEL", "XP"]),
-                  self.display_list_infos(0x00ff00, character, ["EV", "EA", "DESTINY"]),
-                  self.display_list_infos(0x00ff00, character, ["AT", "PRD", "AD"]),
-                  self.display_list_infos(0x00ff00, character, ["SKILLS", "STUFF", "WEAPONS"])]
+        embeds = [self.display_basic_infos(character),
+                  self.display_basic_stats(character),
+                  self.display_skills(character),
+                  self.display_stuff(character),
+                  self.display_weapons(character)]
         return embeds
 
     def money_operation(self, username, amount):
-        the_char = self.dbHandler.read_file_for_character(username)
-        print(the_char)
+        the_char = self.db_handler.read_file_for_character(username)
         operations = amount.split("/")
-        if len(operations) >= 1:
-            tmp_gold = int(the_char["GOLD"]) + int(operations[0])
-            if tmp_gold < 0:
-                tmp_gold = 0
-            the_char["GOLD"] = str(tmp_gold)
-        if len(operations) >= 2:
-            tmp_silver = int(the_char["SILVER"]) + int(operations[1])
-            if tmp_silver < 0:
-                tmp_silver = 0
-            the_char["SILVER"] = str(tmp_silver)
-        if len(operations) >= 3:
-            tmp_bronze = int(the_char["BRONZE"]) + int(operations[2])
-            if tmp_bronze < 0:
-                tmp_bronze = 0
-            the_char["BRONZE"] = str(tmp_bronze)
-        self.dbHandler.update_game()
-        return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
+        try:
+            the_char["GOLD"] = str(max(0, int(the_char["GOLD"]) + int(operations[0])))
+            if len(operations) >= 2:
+                the_char["SILVER"] = str(max(0, int(the_char["SILVER"]) + int(operations[1])))
+            if len(operations) >= 3:
+                the_char["BRONZE"] = str(max(0, int(the_char["BRONZE"]) + int(operations[2])))
+            if self.db_handler.update_game():
+                return the_char["GOLD"], the_char["SILVER"], the_char["BRONZE"]
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "money_operation")
+        return "Error", "Error", "Error"
 
     def increase_ev(self, user_name, amount):
-        char_sheet = self.dbHandler.read_file_for_character(user_name)
-        tmp_ev = int(char_sheet["EV"]) + amount
-        if tmp_ev > int(char_sheet["EVMAX"]):
-            tmp_ev = int(char_sheet["EVMAX"])
-        if tmp_ev < 0:
-            tmp_ev = 0
-        char_sheet["EV"] = str(tmp_ev)
-        self.dbHandler.update_game()
-        return char_sheet["EV"]
+        char_sheet = self.db_handler.read_file_for_character(user_name)
+        if self.compute_ev(amount, char_sheet) and self.db_handler.update_game():
+            return char_sheet["EV"]
+        return None
+
+    def compute_ev(self, amount, char_sheet):
+        try:
+            ev = int(char_sheet["EV"])
+            ev_max = int(char_sheet["EVMAX"])
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev - Stored data")
+            return False
+
+        try:
+            char_sheet["EV"] = str(max(0, min(ev+amount, ev_max)))
+        except TypeError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev - Input data")
+            return False
+
+        return True
 
     def decrease_ev(self, user_name, amount):
-        return self.increase_ev(user_name, (0 - amount))
+        try:
+            new_amount = 0 - amount
+        except TypeError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "decrease_ev")
+            return None
+        return self.increase_ev(user_name, new_amount)
 
     def increase_ev_group(self, amount):
-        print("increase")
         result = []
-        for player in self.dbHandler.data['settings']['characters']:
-            print("Decrease player" + player["PLAYER"])
-            temp_ev = int(player["EV"]) + amount
-            if temp_ev > int(player["EVMAX"]):
-                temp_ev = int(player["EVMAX"])
-            if temp_ev < 0:
-                temp_ev = 0
-            player["EV"] = str(temp_ev)
+        for player in self.db_handler.data['settings']['characters']:
+            self.compute_ev(amount, player)
             result.append({'id': player["PLAYER"], 'remainingLife': player["EV"]})
-        print('Save Changes')
-        self.dbHandler.update_game()
+        self.db_handler.update_game()
         return result
 
     def decrease_ev_group(self, amount):
-        print("Decrease")
-        return self.increase_ev_group((0 - amount))
+        return self.increase_ev_group(0 - amount)

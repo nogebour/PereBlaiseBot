@@ -247,3 +247,7 @@ def test_handle_walk_invalid_speed():
     assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_WALK_SPEED
     assert error.context == "compute_walk"
 
+
+def test_get_character_db_handler():
+    setting = src.Settings.SettingsHandler()
+    assert setting.get_character_db_handler() is not None
