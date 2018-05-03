@@ -583,6 +583,67 @@ def test_ev_player():
     assert (db_handler.data["settings"]["characters"][0]["EV"] == "2" == result)
     assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 
+def test_decrease_ev_player_not_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    db_handler.update_game = MagicMock(return_value=True)
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    result = character_handler.decrease_ev("123456789", "toto")
+    assert result is None
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 1)
+
+
+def test_increase_ev_player_not_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    db_handler.update_game = MagicMock(return_value=True)
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    result = character_handler.increase_ev("123456789", "toto")
+    assert result is None
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 1)
+
+
+def test_ev_player_database_issue():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    src.Error.ErrorManager.ErrorManager().add_error(src.Error.ErrorManager.ErrorCode.NO_DOCUMENT_FOUND,
+                                                    "update_game")
+    db_handler.update_game = MagicMock(return_value=False)
+
+    character_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_handler.db_handler = db_handler
+
+    result = character_handler.increase_ev("123456789", 10)
+    assert result is None
+    assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 1)
+
 
 def test_ev_group():
     src.Error.ErrorManager.ErrorManager().clear_error()
@@ -600,5 +661,5 @@ def test_ev_group():
     character_handler.db_handler = db_handler
 
     result = character_handler.decrease_ev_group(10)
-    print (result)
+    assert result == [{'id': '123456789', 'remainingLife': '2'}, {'id': '987654321', 'remainingLife': '11'}]
     assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)

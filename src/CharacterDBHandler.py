@@ -247,9 +247,8 @@ class CharacterDBHandler:
 
     def increase_ev(self, user_name, amount):
         char_sheet = self.db_handler.read_file_for_character(user_name)
-        if self.compute_ev(amount, char_sheet):
-            if self.db_handler.update_game():
-                return char_sheet["EV"]
+        if self.compute_ev(amount, char_sheet) and self.db_handler.update_game():
+            return char_sheet["EV"]
         return None
 
     def compute_ev(self, amount, char_sheet):
@@ -257,14 +256,24 @@ class CharacterDBHandler:
             ev = int(char_sheet["EV"])
             ev_max = int(char_sheet["EVMAX"])
         except ValueError:
-            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev")
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev - Stored data")
             return False
 
-        char_sheet["EV"] = str(max(0, min(ev+amount, ev_max)))
+        try:
+            char_sheet["EV"] = str(max(0, min(ev+amount, ev_max)))
+        except TypeError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "compute_ev - Input data")
+            return False
+
         return True
 
     def decrease_ev(self, user_name, amount):
-        return self.increase_ev(user_name, (0 - amount))
+        try:
+            new_amount = 0 - amount
+        except TypeError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "decrease_ev")
+            return None
+        return self.increase_ev(user_name, new_amount)
 
     def increase_ev_group(self, amount):
         result = []
