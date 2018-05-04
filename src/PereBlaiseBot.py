@@ -12,14 +12,14 @@ MJ_ID = '294164488427405312'
 
 
 class DiscordMessage:
-    discordChannel = None
-    strMessage = None
-    embedMessage = None
+    discord_channel = None
+    str_msg = None
+    embed_msg = None
 
     def __init__(self, discord_channel, content=None, embed=None):
-        self.discordChannel = discord_channel
-        self.strMessage = content
-        self.embedMessage = embed
+        self.discord_channel = discord_channel
+        self.str_msg = content
+        self.embed_msg = embed
 
 
 class PereBlaiseBot:

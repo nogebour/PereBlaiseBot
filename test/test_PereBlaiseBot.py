@@ -90,7 +90,7 @@ def test_get_value():
         assert False
 
 
-def test_get_user_value():
+def test_get_user_value_str():
     bot = src.PereBlaiseBot.PereBlaiseBot()
     message = discord.Message(reactions=[])
     message.author.id = "987654321"
@@ -106,7 +106,7 @@ def test_get_user_value():
         assert False
 
 
-def test_get_value():
+def test_get_value_str():
     bot = src.PereBlaiseBot.PereBlaiseBot()
 
     assert bot.get_value_str("pb test 12") == "12"
