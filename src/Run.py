@@ -44,7 +44,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    result_messages = theBot.on_message(message, client)
+    result_messages = theBot.on_message(message)
     for a_message in result_messages:
         await client.send_message(a_message.discordChannel, embed=a_message.embedMessage, content=a_message.strMessage)
 
