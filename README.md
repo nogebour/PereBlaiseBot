@@ -11,7 +11,7 @@
 I would like to thanks different persons for this project.
 - Damien, Paul for their contributions by bringing ideas and support.
 - Pen of Chaos, author of [Naheulbeuk](https://www.naheulbeuk.com), the role playing game used on this project.
-- Alexandre Astier, creator of [Kaamelott](https://en.wikipedia.org/wiki/Kaamelott). [Pere Blaise](http://fr.kaamelott-officiel.wikia.com/wiki/P%C3%A8re_Blaise) is a character of this finction.
+- Alexandre Astier, creator of [Kaamelott](https://en.wikipedia.org/wiki/Kaamelott). [Pere Blaise](http://fr.kaamelott-officiel.wikia.com/wiki/P%C3%A8re_Blaise) is a character of this fiction.
 
 ## GitHubPages Generator
 
@@ -19,6 +19,6 @@ You can use the [editor on GitHub](https://github.com/nogebour/PereBlaiseBot/edi
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-# Code coverage statistique 
+# Code coverage statistic 
 
 ![Code coverage](https://codecov.io/gh/nogebour/PereBlaiseBot/commit/61e7a1d2aca8513034debb68ca631556b8d3a152/graphs/sunburst.svg)

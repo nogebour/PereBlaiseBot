@@ -151,6 +151,7 @@ def test_compute_walk_wrong_quality():
 def test_handle_rest():
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     character_db_handler.increase_ev_group = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
                                                                      {'id': 'Dieu', 'remainingLife': '999'},
                                                                      {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
@@ -171,6 +172,7 @@ def test_handle_rest():
 def test_handle_walk():
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     character_db_handler.increase_ev_group = MagicMock(return_value=[{'id': 'Satan', 'remainingLife': '666'},
                                                                      {'id': 'Dieu', 'remainingLife': '999'},
                                                                      {'id': 'Chuck Norris', 'remainingLife': '9999999'}])
@@ -192,6 +194,7 @@ def test_handle_rest_not_integer():
     src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_rest("normale", "toto", an_embed)
@@ -207,6 +210,7 @@ def test_handle_walk_not_integer():
     src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_walk("normale", "toto", an_embed)
@@ -222,6 +226,7 @@ def test_handle_rest_invalid_quality():
     src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_rest("yooy", 300, an_embed)
@@ -237,6 +242,7 @@ def test_handle_walk_invalid_speed():
     src.Error.ErrorManager.ErrorManager().clear_error()
     setting = src.Settings.SettingsHandler()
     character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.initialize = MagicMock()
     setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
     an_embed = discord.Embed(color=0x00ff00)
     result = setting.handle_walk("yoyo", 300, an_embed)
@@ -246,6 +252,56 @@ def test_handle_walk_invalid_speed():
     error = src.Error.ErrorManager.ErrorManager.error_log[0]
     assert error.error_type == src.Error.ErrorManager.ErrorCode.INVALID_WALK_SPEED
     assert error.context == "compute_walk"
+
+def test_handle_walk_e2e():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.db_handler = db_handler
+    character_db_handler.db_handler.retrieve_game = MagicMock()
+    character_db_handler.db_handler.update_game = MagicMock(return_value=True)
+    an_embed = discord.Embed(color=0x00ff00)
+
+    setting = src.Settings.SettingsHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    result = setting.handle_walk("normale", 600, an_embed)
+    assert result
+    assert len(an_embed.fields) == 2
+    assert db_handler.data["settings"]["characters"][0]["EV"] == "9"
+    assert db_handler.data["settings"]["characters"][1]["EV"] == "18"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+def test_handle_rest_e2e():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    db_handler = src.Database.DbHandler.DbHandler()
+    db_handler.data = {"name": "kornettoh",
+                       "settings": {"characters": [{"PLAYER": "123456789",
+                                                    "EV": "12",
+                                                    "EVMAX": "25"},
+                                                   {"PLAYER": "987654321",
+                                                    "EV": "21",
+                                                    "EVMAX": "25"}]}}
+    character_db_handler = src.CharacterDBHandler.CharacterDBHandler()
+    character_db_handler.db_handler = db_handler
+    character_db_handler.db_handler.retrieve_game = MagicMock()
+    character_db_handler.db_handler.update_game = MagicMock(return_value=True)
+    an_embed = discord.Embed(color=0x00ff00)
+
+    setting = src.Settings.SettingsHandler()
+    setting.get_character_db_handler = MagicMock(return_value=character_db_handler)
+    result = setting.handle_rest("normal", 600, an_embed)
+    assert result
+    assert len(an_embed.fields) == 2
+    assert db_handler.data["settings"]["characters"][0]["EV"] == "14"
+    assert db_handler.data["settings"]["characters"][1]["EV"] == "23"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
 
 
 def test_get_character_db_handler():

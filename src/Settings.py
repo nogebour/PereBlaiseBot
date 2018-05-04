@@ -76,6 +76,7 @@ class SettingsHandler:
 
     def handle_rest(self, quality, length, embed):
         db_handler = self.get_character_db_handler()
+        db_handler.initialize()
         try:
             delta = int(length)
         except ValueError:
@@ -98,6 +99,7 @@ class SettingsHandler:
 
     def handle_walk(self, speed, length, embed):
         character_db_handler = self.get_character_db_handler()
+        character_db_handler.initialize()
         delta = 0
         try:
             delta = int(length)
