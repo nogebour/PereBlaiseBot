@@ -1,4 +1,5 @@
 import src.PereBlaiseBot
+import src.Settings
 import discord
 
 
@@ -118,3 +119,89 @@ def test_get_value_str():
         assert True
     except Exception:
         assert False
+
+
+def test_make_time_operation_not_mj():
+    message = discord.Message(reactions=[])
+    message.author.id = "2941644884274053120"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.db_handler.data = json
+
+    embed = discord.Embed()
+
+    assert not bot.make_time_operation("10", message, settings, embed)
+
+
+def test_make_time_operation_not_integer():
+    message = discord.Message(reactions=[])
+    message.author.id = "2941644884274053120"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.db_handler.data = json
+
+    embed = discord.Embed()
+
+    assert not bot.make_time_operation("toto", message, settings, embed)
+
+def test_make_time_operation_negative_delta():
+    message = discord.Message(reactions=[])
+    message.author.id = "2941644884274053120"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.db_handler.data = json
+
+    embed = discord.Embed()
+
+    assert not bot.make_time_operation("-1", message, settings, embed)
+
+
+def test_make_time_operation_mj():
+    message = discord.Message(reactions=[])
+    message.author.id = "294164488427405312"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.data = json
+    settings.fill_data()
+
+    embed = discord.Embed()
+
+    assert bot.make_time_operation("10", message, settings, embed)
+    assert embed.fields[0].value == "<@294164488427405312> a demandé l'ajout de 10 minutes.\n" \
+                                    "Nous sommes donc maintenant le 02/01/2018 à 02:12."

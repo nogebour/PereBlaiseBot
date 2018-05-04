@@ -73,7 +73,7 @@ class PereBlaiseBot:
                 delta = int(delta_min)
             except ValueError:
                 print("Not an integer")
-                return
+                return result
             if delta > 0:
                 current_time = settings.add_time(delta)
                 result = True
