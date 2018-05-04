@@ -44,3 +44,77 @@ def test_get_user():
     assert bot.get_user(["toto", "<@!123456789>"], message, 1) == "123456789"
     assert bot.get_user(["toto", "<@!123456789>"], message, 0) == "987654321"
     assert bot.get_user(["toto", "<@!123456789>"], message, 2) == "987654321"
+
+
+def test_get_user_value():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.author.id = "987654321"
+
+    assert bot.get_user_value("pb test <@!123456789> 12") == ("123456789", 12)
+    try:
+        bot.get_user_value("pb test <@!123456789> toto")
+        assert False
+    except ValueError:
+        assert True
+    except Exception:
+        assert False
+
+    try:
+        bot.get_user_value("pb <@!123456789> toto")
+        assert False
+    except IndexError:
+        assert True
+    except Exception:
+        assert False
+
+
+def test_get_value():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    assert bot.get_value("pb test 12") == 12
+    try:
+        bot.get_value("pb test toto")
+        assert False
+    except ValueError:
+        assert True
+    except Exception:
+        assert False
+
+    try:
+        bot.get_value("pb toto")
+        assert False
+    except IndexError:
+        assert True
+    except Exception:
+        assert False
+
+
+def test_get_user_value():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.author.id = "987654321"
+
+    assert bot.get_user_value_str("pb test <@!123456789> 12") == ("123456789", "12")
+
+    try:
+        bot.get_user_value_str("pb <@!123456789> toto")
+        assert False
+    except IndexError:
+        assert True
+    except Exception:
+        assert False
+
+
+def test_get_value():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    assert bot.get_value_str("pb test 12") == "12"
+
+    try:
+        bot.get_value_str("pb toto")
+        assert False
+    except IndexError:
+        assert True
+    except Exception:
+        assert False
