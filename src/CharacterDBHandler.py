@@ -147,11 +147,11 @@ class CharacterDBHandler:
                                         self.DisplayItem(self.format_gauge(character.ea,
                                                                            character.ea_max),
                                                          self.mapping["EA"]),
-                                        self.DisplayItem(character.pointsDeDestin,
+                                        self.DisplayItem(character.points_destin,
                                                          self.mapping["DESTINY"]),
-                                        self.DisplayItem(self.format_money(character.piecesOr,
-                                                                           character.piecesArgent,
-                                                                           character.piecesBronze),
+                                        self.DisplayItem(self.format_money(character.pieces_or,
+                                                                           character.pieces_argent,
+                                                                           character.pieces_bronze),
                                                          self.mapping["GOLD"]),
                                         self.DisplayItem(character.attaque,
                                                          self.mapping["AT"]),
@@ -170,9 +170,9 @@ class CharacterDBHandler:
 
     def display_money_infos(self, character, display_name=False):
         return self.display_list_infos(0x00ff00,
-                                       [self.DisplayItem(self.format_money(character.piecesOr,
-                                                                           character.piecesArgent,
-                                                                           character.piecesBronze),
+                                       [self.DisplayItem(self.format_money(character.pieces_or,
+                                                                           character.pieces_argent,
+                                                                           character.pieces_bronze),
                                                          self.mapping["GOLD"])],
                                        (character.name if display_name else None))
 
