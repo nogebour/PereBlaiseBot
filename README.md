@@ -18,7 +18,3 @@ I would like to thanks different persons for this project.
 You can use the [editor on GitHub](https://github.com/nogebour/PereBlaiseBot/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-# Code coverage statistic 
-
-![Code coverage](https://codecov.io/gh/nogebour/PereBlaiseBot/commit/61e7a1d2aca8513034debb68ca631556b8d3a152/graphs/sunburst.svg)
