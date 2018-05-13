@@ -145,30 +145,31 @@ class PereBlaiseBot:
             operands = re.split('[D,d]', operation)
             if len(operands) == 2:
                 str_display += '('
-                result, str_display = self.throw_dices(operands, result, str_display)
+                result, str_display = self.throw_dices(operands[0], operands[1], result, str_display)
                 str_display = str_display[:-1]
                 str_display += ')'
             else:
-                ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "throw_dices")
+                ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "compute_and_display_single_operation")
         else:
             str_display += operation
             result += int(operation)
         return result, str_display
 
-    def throw_dices(self, operands, result, str_display):
+    def throw_dices(self, occurrence, dice_type, result, str_display):
         try:
-            occurrence = int(operands[0])
-            dice_type = int(operands[1])
+            occurrence = int(occurrence)
+            dice_type = int(dice_type)
         except ValueError:
             ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "throw_dices")
             return None, ""
         if occurrence <= 0 or dice_type <= 0:
             ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "throw_dices")
             return None, ""
+
         for x in range(0, occurrence):
             value = random.randint(1, dice_type)
             str_display += (str(value) + '+')
-            result += value
+            result = None if result is None else (result + value)
         return result, str_display
 
     def represents_int(self, s):
