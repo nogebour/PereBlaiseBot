@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import src.PereBlaiseBot
 import src.Settings
 import src.Error.ErrorManager
@@ -219,3 +221,26 @@ def test_make_time_operation_negative():
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
 
+
+def test_apply_heal():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.character_db_handler.initialize = MagicMock()
+    bot.character_db_handler.increase_ev = MagicMock(return_value="11")
+
+    embed = discord.Embed()
+
+    bot.apply_heal(embed, "123456789", "10")
+    assert embed.fields[0].value == "Le joueur <@123456789> a soigné 10 points de vie.\nIl reste 11 points de vie."
+    assert embed.fields[0].name == "Soin enregistré"
+
+
+def test_apply_injury():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.character_db_handler.initialize = MagicMock()
+    bot.character_db_handler.decrease_ev = MagicMock(return_value="11")
+
+    embed = discord.Embed()
+
+    bot.apply_injury(embed, "123456789", "10")
+    assert embed.fields[0].value == "Le joueur <@123456789> a reçu 10 points de dégats.\nIl reste 11 points de vie."
+    assert embed.fields[0].name == "Blessure enregistrée"

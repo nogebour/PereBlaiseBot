@@ -24,6 +24,9 @@ class DiscordMessage:
 
 
 class PereBlaiseBot:
+    def __init__(self):
+        self.character_db_handler = CharacterDBHandler()
+
     def check_args(self, message, nb_args, help_message):
         array_args = message.split(" ")
         if len(array_args) < nb_args:
@@ -91,22 +94,20 @@ class PereBlaiseBot:
         return result
 
     def apply_heal(self, embed, user, value):
-        character_db = CharacterDBHandler()
-        character_db.initialize()
-        remaining_life = character_db.increase_ev(user, value)
+        self.character_db_handler.initialize()
+        remaining_life = self.character_db_handler.increase_ev(user, value)
         embed.add_field(
-            name="Soin enregistrée",
+            name="Soin enregistré",
             value="Le joueur <@" + user + "> a soigné " + str(
                 value) + " points de vie.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
 
     def apply_injury(self, embed, user, value):
-        character_db = CharacterDBHandler()
-        character_db.initialize()
-        remaining_life = character_db.decrease_ev(user, value)
+        self.character_db_handler.initialize()
+        remaining_life = self.character_db_handler.decrease_ev(user, value)
         embed.add_field(
             name="Blessure enregistrée",
-            value="Le joueur <@" + user + "> a recu " + str(
+            value="Le joueur <@" + user + "> a reçu " + str(
                 value) + " points de dégats.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
 
