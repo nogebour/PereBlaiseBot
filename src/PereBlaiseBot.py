@@ -123,32 +123,51 @@ class PereBlaiseBot:
             operations = comparison[0].split('+')
             str_display = comparison[0] + '='
             for operation in operations:
-                if ('D' in operation) or ('d' in operation):
-                    operands = re.split('[D,d]', operation)
-                    if len(operands) == 2:
-                        str_display += '('
-                        occurrence = int(operands[0])
-                        dice_type = int(operands[1])
-                        for x in range(0, occurrence):
-                            value = random.randint(1, dice_type)
-                            str_display += (str(value) + '+')
-                            result += value
-                        str_display = str_display[:-1]
-                        str_display += ')'
-                else:
-                    str_display += operation
-                    result += int(operation)
+                result, str_display = self.compute_and_display_single_operation(operation, result, str_display)
                 str_display += '+'
             str_display = str_display[:-1]
             str_display += ('='+str(result))
-            if threshold is not None:
-                str_display += ('<'+str(threshold))
-                if result < threshold:
-                    str_display += ' --> Reussite'
-                else:
-                    str_display += ' --> Echec'
+            str_display = self.display_result_status(result, str_display, threshold)
             final_result += str_display+'\n'
         return final_result[:-1]
+
+    def display_result_status(self, result, str_display, threshold):
+        if threshold is not None:
+            str_display += ('<' + str(threshold))
+            if result < threshold:
+                str_display += ' --> Reussite'
+            else:
+                str_display += ' --> Echec'
+        return str_display
+
+    def compute_and_display_single_operation(self, operation, result, str_display):
+        if ('D' in operation) or ('d' in operation):
+            operands = re.split('[D,d]', operation)
+            if len(operands) == 2:
+                str_display += '('
+                result, str_display = self.throw_dices(operands, result, str_display)
+                str_display = str_display[:-1]
+                str_display += ')'
+        else:
+            str_display += operation
+            result += int(operation)
+        return result, str_display
+
+    def throw_dices(self, operands, result, str_display):
+        try:
+            occurrence = int(operands[0])
+            dice_type = int(operands[1])
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "throw_dices")
+            return None, ""
+        if occurrence <= 0 or dice_type <= 0:
+            ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "throw_dices")
+            return None, ""
+        for x in range(0, occurrence):
+            value = random.randint(1, dice_type)
+            str_display += (str(value) + '+')
+            result += value
+        return result, str_display
 
     def represents_int(self, s):
         try:

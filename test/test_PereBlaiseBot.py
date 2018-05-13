@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+import random
 import src.PereBlaiseBot
 import src.Settings
 import src.Error.ErrorManager
@@ -244,3 +245,45 @@ def test_apply_injury():
     bot.apply_injury(embed, "123456789", "10")
     assert embed.fields[0].value == "Le joueur <@123456789> a reçu 10 points de dégats.\nIl reste 11 points de vie."
     assert embed.fields[0].name == "Blessure enregistrée"
+
+
+def throw_dices():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.throw_dices("2D6", None, "")
+    assert result == 2
+    assert str_display == "1+1"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def throw_dices_with_existing_values():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.throw_dices("2D6", 4, "1+1")
+    assert result == 6
+    assert str_display == "1+11+1"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def throw_dices_with_non_integer_dices():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.throw_dices("2Dtoto", 4, "1+1")
+    assert result is None
+    assert str_display == ""
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+
+
+def throw_dices_with_negqtive_dices():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.throw_dices("2D-2", 4, "1+1")
+    assert result is None
+    assert str_display == ""
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
