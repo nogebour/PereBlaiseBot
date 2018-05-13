@@ -89,3 +89,25 @@ def test_error_code_7():
     assert default_error.error_message == "Unable to find the character associated to the player"
     assert default_error.context == default_context
     assert default_error.timestamp == default_timestamp
+
+
+def test_error_code_8():
+    default_timestamp = datetime.datetime(2018, 1, 2, 3, 4, 5, 6)
+    default_context = "test"
+    default_error = Error(ErrorCode.GM_COMMAND_ONLY, default_context, default_timestamp)
+    assert default_error.error_type == ErrorCode.GM_COMMAND_ONLY
+    assert default_error.error_code == 8
+    assert default_error.error_message == "Unable to use the command as you are not the GM"
+    assert default_error.context == default_context
+    assert default_error.timestamp == default_timestamp
+
+
+def test_error_code_9():
+    default_timestamp = datetime.datetime(2018, 1, 2, 3, 4, 5, 6)
+    default_context = "test"
+    default_error = Error(ErrorCode.NOT_A_POSITIVE_INTEGER, default_context, default_timestamp)
+    assert default_error.error_type == ErrorCode.NOT_A_POSITIVE_INTEGER
+    assert default_error.error_code == 9
+    assert default_error.error_message == "A positive integer was expected"
+    assert default_error.context == default_context
+    assert default_error.timestamp == default_timestamp

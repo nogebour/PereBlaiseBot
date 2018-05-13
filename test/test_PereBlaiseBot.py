@@ -122,9 +122,10 @@ def test_get_value_str():
         assert False
 
 
-def test_make_time_operation_not_mj():
+def test_make_time_operation_not_gm():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     message = discord.Message(reactions=[])
-    message.author.id = "2941644884274053120"
+    message.author.id = "294164488427405313"
     json = {"name": "kornettoh",
             "settings": {"start_time": "01/01/2018 - 01:01",
                          "current_time": "02/01/2018 - 02:02",
@@ -141,48 +142,9 @@ def test_make_time_operation_not_mj():
     embed = discord.Embed()
 
     assert not bot.make_time_operation("10", message, settings, embed)
-
-
-def test_make_time_operation_not_integer():
-    message = discord.Message(reactions=[])
-    message.author.id = "2941644884274053120"
-    json = {"name": "kornettoh",
-            "settings": {"start_time": "01/01/2018 - 01:01",
-                         "current_time": "02/01/2018 - 02:02",
-                         "players": ["John Doe",
-                                     "Jane Doe",
-                                     "Chuck Norris"],
-                         'characters': [{'PLAYER': "123456789"},
-                                        {'PLAYER': "987654321"}]}}
-
-    bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.db_handler.data = json
-
-    embed = discord.Embed()
-
-    assert not bot.make_time_operation("toto", message, settings, embed)
-
-def test_make_time_operation_negative_delta():
-    message = discord.Message(reactions=[])
-    message.author.id = "2941644884274053120"
-    json = {"name": "kornettoh",
-            "settings": {"start_time": "01/01/2018 - 01:01",
-                         "current_time": "02/01/2018 - 02:02",
-                         "players": ["John Doe",
-                                     "Jane Doe",
-                                     "Chuck Norris"],
-                         'characters': [{'PLAYER': "123456789"},
-                                        {'PLAYER': "987654321"}]}}
-
-    bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.db_handler.data = json
-
-    embed = discord.Embed()
-
-    assert not bot.make_time_operation("-1", message, settings, embed)
-
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.GM_COMMAND_ONLY
 
 def test_make_time_operation_mj():
     message = discord.Message(reactions=[])
@@ -231,3 +193,29 @@ def test_make_time_operation_not_an_integer():
     assert not bot.make_time_operation("toto", message, settings, embed)
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+
+
+def test_make_time_operation_negative():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    message = discord.Message(reactions=[])
+    message.author.id = "294164488427405312"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.data = json
+    settings.fill_data()
+
+    embed = discord.Embed()
+
+    assert not bot.make_time_operation("-10", message, settings, embed)
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
+

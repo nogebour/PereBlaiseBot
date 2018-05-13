@@ -10,6 +10,8 @@ class ErrorCode(Enum):
     NOT_AN_INTEGER = (5, "Not an integer")
     UNABLE_TO_CONNECT_DB = (6, "Unable to connect to Database")
     NO_CHARACTER_FOUND = (7, "Unable to find the character associated to the player")
+    GM_COMMAND_ONLY = (8, "Unable to use the command as you are not the GM")
+    NOT_A_POSITIVE_INTEGER = (9, "A positive integer was expected")
 
     def __init__(self, error_code, error_message):
         self.error_code = error_code

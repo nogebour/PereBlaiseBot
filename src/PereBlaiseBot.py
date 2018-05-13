@@ -68,22 +68,26 @@ class PereBlaiseBot:
 
     def make_time_operation(self, delta_min, message, settings, embed):
         result = False
-        if message.author.id == MJ_ID:
-            delta = 0
-            try:
-                delta = int(delta_min)
-            except ValueError:
-                ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "make_time_operation")
-                return result
-            if delta > 0:
-                current_time = settings.add_time(delta)
-                result = True
-                embed.add_field(
-                    name="Temps ajouté",
-                    value="<@" + message.author.id + "> a demandé l'ajout de " + delta_min +
-                          " minutes.\nNous sommes donc maintenant le " +
-                          current_time.strftime("%d/%m/%Y") + " à " + current_time.strftime("%H:%M") + ".",
-                    inline=False)
+        if message.author.id != MJ_ID:
+            ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY, "make_time_operation")
+            return result
+        delta = 0
+        try:
+            delta = int(delta_min)
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "make_time_operation")
+            return result
+        if delta <= 0:
+            ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "make_time_operation")
+            return result
+        current_time = settings.add_time(delta)
+        result = True
+        embed.add_field(
+            name="Temps ajouté",
+            value="<@" + message.author.id + "> a demandé l'ajout de " + delta_min +
+                  " minutes.\nNous sommes donc maintenant le " +
+                  current_time.strftime("%d/%m/%Y") + " à " + current_time.strftime("%H:%M") + ".",
+            inline=False)
         return result
 
     def apply_heal(self, embed, user, value):
