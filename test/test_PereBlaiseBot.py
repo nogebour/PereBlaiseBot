@@ -278,11 +278,22 @@ def throw_dices_with_non_integer_dices():
         src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
 
 
-def throw_dices_with_negqtive_dices():
+def throw_dices_with_negative_dices():
     bot = src.PereBlaiseBot.PereBlaiseBot()
     random.randint = MagicMock(return_value=1)
 
     result, str_display = bot.throw_dices("2D-2", 4, "1+1")
+    assert result is None
+    assert str_display == ""
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
+
+
+def throw_dices_with_negative_occ():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.throw_dices("-2D6", 4, "1+1")
     assert result is None
     assert str_display == ""
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\

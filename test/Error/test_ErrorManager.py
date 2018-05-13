@@ -9,8 +9,10 @@ def test_add_error():
     error_mgr.add_error()
     assert len(error_mgr.error_log) == 1
 
-    error_mgr.add_error(ErrorCode.NOT_AN_INTEGER, "test")
+    error_mgr.add_error(ErrorCode.INVALID_SYNTAX, "test", ["toto"])
     assert len(error_mgr.error_log) == 2
 
     assert error_mgr.error_log[0].error_type == ErrorCode.INTERNAL_ERROR
-    assert error_mgr.error_log[1].error_type == ErrorCode.NOT_AN_INTEGER
+    assert error_mgr.error_log[0].error_args == []
+    assert error_mgr.error_log[1].error_type == ErrorCode.INVALID_SYNTAX
+    assert error_mgr.error_log[1].error_args == ["toto"]

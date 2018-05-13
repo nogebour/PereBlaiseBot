@@ -148,6 +148,8 @@ class PereBlaiseBot:
                 result, str_display = self.throw_dices(operands, result, str_display)
                 str_display = str_display[:-1]
                 str_display += ')'
+            else:
+                ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "throw_dices")
         else:
             str_display += operation
             result += int(operation)
