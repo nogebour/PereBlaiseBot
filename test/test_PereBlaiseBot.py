@@ -1,5 +1,6 @@
 import src.PereBlaiseBot
 import src.Settings
+import src.Error.ErrorManager
 import discord
 
 
@@ -205,3 +206,28 @@ def test_make_time_operation_mj():
     assert bot.make_time_operation("10", message, settings, embed)
     assert embed.fields[0].value == "<@294164488427405312> a demandé l'ajout de 10 minutes.\n" \
                                     "Nous sommes donc maintenant le 02/01/2018 à 02:12."
+
+
+def test_make_time_operation_not_an_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    message = discord.Message(reactions=[])
+    message.author.id = "294164488427405312"
+    json = {"name": "kornettoh",
+            "settings": {"start_time": "01/01/2018 - 01:01",
+                         "current_time": "02/01/2018 - 02:02",
+                         "players": ["John Doe",
+                                     "Jane Doe",
+                                     "Chuck Norris"],
+                         'characters': [{'PLAYER': "123456789"},
+                                        {'PLAYER': "987654321"}]}}
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    settings = src.Settings.SettingsHandler()
+    settings.data = json
+    settings.fill_data()
+
+    embed = discord.Embed()
+
+    assert not bot.make_time_operation("toto", message, settings, embed)
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER

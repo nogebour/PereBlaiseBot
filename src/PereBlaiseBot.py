@@ -4,7 +4,8 @@ import re
 
 from .CharacterDBHandler import CharacterDBHandler
 from .Settings import SettingsHandler
-from src.Database.DbHandler import DbHandler
+from .Database.DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
 
 HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '411248354534752256'
@@ -72,7 +73,7 @@ class PereBlaiseBot:
             try:
                 delta = int(delta_min)
             except ValueError:
-                print("Not an integer")
+                ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "make_time_operation")
                 return result
             if delta > 0:
                 current_time = settings.add_time(delta)
