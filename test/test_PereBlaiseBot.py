@@ -149,6 +149,7 @@ def test_make_time_operation_not_gm():
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.GM_COMMAND_ONLY
 
+
 def test_make_time_operation_mj():
     message = discord.Message(reactions=[])
     message.author.id = "294164488427405312"
@@ -303,3 +304,14 @@ def test_throw_dices_with_negative_occ():
     assert str_display == ""
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
+
+
+def test_compute_and_display_single_operation():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.compute_and_display_single_operation("1d6", 4, "4+")
+    assert result == 5
+    assert str_display == "4+(1)"
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0

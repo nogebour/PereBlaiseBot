@@ -120,7 +120,7 @@ class PereBlaiseBot:
             threshold = None
             if len(comparison) > 1:
                 threshold = int(comparison[1])
-            operations = comparison[0].split('+')
+            operations = re.split('[+,-]', comparison[0])
             str_display = comparison[0] + '='
             for operation in operations:
                 result, str_display = self.compute_and_display_single_operation(operation, result, str_display)
@@ -146,13 +146,18 @@ class PereBlaiseBot:
             if len(operands) == 2:
                 str_display += '('
                 result, str_display = self.throw_dices(operands[0], operands[1], result, str_display)
-                str_display = str_display[:-1]
-                str_display += ')'
+                if result is not None:
+                    str_display = str_display[:-1]
+                    str_display += ')'
             else:
-                ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "compute_and_display_single_operation")
+                ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "compute_and_display_single_operation", [""])
         else:
-            str_display += operation
-            result += int(operation)
+            try:
+                str_display += operation
+                result += int(operation)
+            except ValueError:
+                ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "throw_dices")
+                return None, ""
         return result, str_display
 
     def throw_dices(self, occurrence, dice_type, result, str_display):
