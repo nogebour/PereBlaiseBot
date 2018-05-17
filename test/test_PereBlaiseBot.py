@@ -352,3 +352,28 @@ def test_compute_and_display_single_operation_int_op():
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
+
+
+def test_display_result_status_success():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    str_display = bot.display_result_status(4, "4", 10)
+    assert str_display == "4<10 --> Reussite"
+
+
+def test_display_result_status_failure():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    str_display = bot.display_result_status(4, "4", 3)
+    assert str_display == "4<3 --> Echec"
+
+
+def test_display_result_status_none():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    str_display = bot.display_result_status(4, "4", None)
+    assert str_display == "4"
+
