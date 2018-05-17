@@ -315,3 +315,40 @@ def test_compute_and_display_single_operation():
     assert result == 5
     assert str_display == "4+(1)"
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+def test_compute_and_display_single_operation_wrong_syntax():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.compute_and_display_single_operation("1d6d6", 4, "4+")
+    assert result is None
+    assert str_display == ""
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.INVALID_SYNTAX
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_args[0] == "[0-9]*[d,D][0-9]*"
+
+def test_compute_and_display_single_operation_propagate_errors():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.compute_and_display_single_operation("-2d6", 4, "4+")
+    assert result is None
+    assert str_display == ""
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
+
+
+def test_compute_and_display_single_operation_int_op():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=1)
+
+    result, str_display = bot.compute_and_display_single_operation("toto", 4, "4+")
+    assert result is None
+    assert str_display == ""
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER

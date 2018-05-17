@@ -150,7 +150,8 @@ class PereBlaiseBot:
                     str_display = str_display[:-1]
                     str_display += ')'
             else:
-                ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "compute_and_display_single_operation", [""])
+                ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "compute_and_display_single_operation", ["[0-9]*[d,D][0-9]*"])
+                return None, ""
         else:
             try:
                 str_display += operation
