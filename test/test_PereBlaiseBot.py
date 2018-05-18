@@ -390,5 +390,45 @@ def test_roll_ok():
 def test_represents_int():
     bot = src.PereBlaiseBot.PereBlaiseBot()
     assert bot.represents_int("12")
-    assert bot.represents_int("-s12")
-    assert bot.represents_int("toto")
+    assert bot.represents_int("-12")
+    assert not bot.represents_int("toto")
+
+
+def test_handle_insults():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    result, gif = bot.handle_insults("blaise toto fuck")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto encule")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto salopard")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto connard")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto batard")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto ass hole")
+    assert result
+    assert len(gif) > 0
+
+    result, gif = bot.handle_insults("blaise toto pisse")
+    assert result
+    assert len(gif) > 0
+
+    result, gif = bot.handle_insults("blaise toto bite")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto dick")
+    assert result
+    assert len(gif) > 0
+
+    result, gif = bot.handle_insults("blaise toto whore")
+    assert result
+    assert len(gif) > 0
+    result, gif = bot.handle_insults("blaise toto pute")
+    assert result
+    assert len(gif) > 0

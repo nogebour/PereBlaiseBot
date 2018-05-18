@@ -186,32 +186,33 @@ class PereBlaiseBot:
             return False
 
     def handle_insults(self, message):
-        if "blaise" in message.content.lower() and\
-                ("fuck" in message.content.lower() or
-                 "encul" in message.content.lower() or
-                 "salop" in message.content.lower() or
-                 "con" in message.content.lower() or
-                 "batard" in message.content.lower() or
-                 ("ass" in message.content.lower() and
-                  "hole" in message.content.lower())):
+        lowered_msg = message.lower()
+        if "blaise" in lowered_msg and\
+                ("fuck" in lowered_msg or
+                 "encul" in lowered_msg or
+                 "salop" in lowered_msg or
+                 "con" in lowered_msg or
+                 "batard" in lowered_msg or
+                 ("ass" in lowered_msg and
+                  "hole" in lowered_msg)):
             gif = ["https://giphy.com/gifs/gtfo-denzel-washington-shut-the-door-l0HlMSVVw9zqmClLq",
                    "https://giphy.com/gifs/QGzPdYCcBbbZm",
                    "https://giphy.com/gifs/highqualitygifs-s03-e11-cee7A1jKXPDZ6",
                    "https://giphy.com/gifs/rupaulsdragraces5-rupauls-drag-race-rupaul-season-5-26tnoxLPelh9nzzPy",
                    "https://giphy.com/gifs/3d-c4d-cinema-4d-vII0XI8RqUVMY"]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("pisse" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("pisse" in lowered_msg):
             gif = ["https://giphy.com/gifs/tisha-campbell-nicole-ari-parker-real-husbands-of-hollywood-cIhprQfD0SDOo"]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("bite" in message.content.lower() or
-                 "dick" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("bite" in lowered_msg or
+                 "dick" in lowered_msg):
             gif = ["https://giphy.com/gifs/work-adult-safe-XH6dfMa0cLzYA "]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("whore" in message.content.lower() or
-                 "pute" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("whore" in lowered_msg or
+                 "pute" in lowered_msg):
             gif = ["https://giphy.com/gifs/realitytvgifs-fuck-you-boo-VGNc4ynYaSzy8 "]
             return True, gif
         else:
@@ -219,7 +220,7 @@ class PereBlaiseBot:
 
     def on_message(self, message):
         returned_msgs = []
-        result_insult, gif = self.handle_insults(message)
+        result_insult, gif = self.handle_insults(message.content)
         if result_insult:
             return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
         elif message.content.startswith('pereBlaise') or\
