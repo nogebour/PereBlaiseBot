@@ -492,3 +492,15 @@ def test_handle_welcome():
 
     assert len(returned_msg) == 1
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def test_handle_welcome_not_matched():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.handle_welcome(["hikjjifgijd"], message, returned_msg)
+
+    assert len(returned_msg) == 0
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
