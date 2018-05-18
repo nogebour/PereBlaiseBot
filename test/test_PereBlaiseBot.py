@@ -490,5 +490,5 @@ def test_handle_welcome():
 
     bot.handle_welcome(["hi"], message, returned_msg)
 
-    assert len(returned_msg) == 0
+    assert len(returned_msg) == 1
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
