@@ -334,7 +334,7 @@ class PereBlaiseBot:
 #                                                    content=("Hello jeune aventurier!\n"
 #                                                             "Je ne te comprends pas."
 #                                                             " Va donc voir le channel <#"+HELP_CHANNEL+">")))
-        ErrorManager.clear_error()
+        ErrorManager().clear_error()
         return returned_msgs
 
     def handle_roll(self, args, message, returned_msgs):
