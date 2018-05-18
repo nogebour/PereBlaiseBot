@@ -377,3 +377,12 @@ def test_display_result_status_none():
     str_display = bot.display_result_status(4, "4", None)
     assert str_display == "4"
 
+
+def test_roll_ok():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    random.randint = MagicMock(return_value=2)
+
+    str_display = bot.roll("1d6 + 2d12 & 12 & 1D6 < 2 & 1D6 < 5")
+    print (str_display)
+    assert str_display == "1d6+2d12=(2)+(2+2)=6\n12=12=12\n1D6=(2)=2<2 --> Echec\n1D6=(2)=2<5 --> Reussite"
+
