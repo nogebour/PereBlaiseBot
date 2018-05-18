@@ -386,3 +386,9 @@ def test_roll_ok():
     print (str_display)
     assert str_display == "1d6+2d12=(2)+(2+2)=6\n12=12=12\n1D6=(2)=2<2 --> Echec\n1D6=(2)=2<5 --> Reussite"
 
+
+def test_represents_int():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    assert bot.represents_int("12")
+    assert bot.represents_int("-s12")
+    assert bot.represents_int("toto")
