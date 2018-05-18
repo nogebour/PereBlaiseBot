@@ -443,3 +443,32 @@ def test_detect_command_keyword():
     assert bot.detect_command_keyword("pèreBlàise")
     assert bot.detect_command_keyword("pB")
 
+
+def test_handle_life_operations_heal():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.author.id = "987654321"
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.apply_heal = MagicMock()
+
+    bot.handle_life_operations("2", message, returned_msg)
+
+    assert len(returned_msg) == 1
+    bot.apply_heal.assert_called_once_with(returned_msg[0].embed_msg, "987654321", 2)
+
+
+def test_handle_life_operations_injury():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.author.id = "987654321"
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.apply_injury = MagicMock()
+
+    bot.handle_life_operations("-2", message, returned_msg)
+
+    assert len(returned_msg) == 1
+    bot.apply_injury.assert_called_once_with(returned_msg[0].embed_msg, "987654321", 2)
