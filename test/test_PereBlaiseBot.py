@@ -488,19 +488,7 @@ def test_handle_welcome():
     message.channel = "123456789"
     returned_msg = []
 
-    bot.handle_life_operations(["hi"], message, returned_msg)
-
-    assert len(returned_msg) == 0
-    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
-
-
-def test_handle_welcome():
-    bot = src.PereBlaiseBot.PereBlaiseBot()
-    message = discord.Message(reactions=[])
-    message.channel = "123456789"
-    returned_msg = []
-
-    bot.handle_life_operations(["hi"], message, returned_msg)
+    bot.handle_welcome(["hi"], message, returned_msg)
 
     assert len(returned_msg) == 0
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
