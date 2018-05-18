@@ -28,15 +28,10 @@ class PereBlaiseBot:
     def __init__(self):
         self.character_db_handler = CharacterDBHandler()
 
-    def check_args(self, message, nb_args, help_message):
+    def check_args(self, message, nb_args, syntax_msg):
         array_args = message.split(" ")
         if len(array_args) < nb_args:
-            embed = discord.Embed(color=0xff0000)
-            embed.add_field(
-                name="Erreur",
-                value=help_message,
-                inline=True)
-            return embed
+            ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "make_time_operation", [syntax_msg])
 
     def get_user(self, args, message, index_user):
         user_id = None
@@ -54,9 +49,9 @@ class PereBlaiseBot:
             user_id = args[2:-1]
         return user_id
 
-    def get_user_value(self, message):
+    def get_user_value(self, message, user_idx=2, value_idx=3):
         array_args = message.split(" ")
-        return self.extract_id(array_args[2]), int(array_args[3])
+        return self.extract_id(array_args[user_idx]), int(array_args[value_idx])
 
     def get_value(self, message):
         array_args = message.split(" ")
@@ -239,6 +234,33 @@ class PereBlaiseBot:
             embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
             returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
+    def display_error(self, returned_msg, channel):
+        for an_error in ErrorManager.error_log:
+            embed = discord.Embed(color=0xff0000)
+            embed.add_field(
+                name="Erreur",
+                value=an_error,
+                inline=True)
+            returned_msg.append(DiscordMessage(channel, embed=embed))
+
+    def handle_mj_injury(self, args, message, returned_msgs):
+        syntax_msg = "!pereBlaise MJblessure <pseudo> <valeur>"
+        #Decoding
+        if args[0] == 'MJblessure':
+            embed = None
+            self.check_args(message.content, 3, syntax_msg)
+
+        #Check
+            if message.author.id == MJ_ID:
+                user, value = self.get_user_value(message.content, 1, 2)
+                embed = discord.Embed(color=0x00ff00)
+                self.apply_injury(embed, user, value)
+        #display
+            if len(ErrorManager.error_log) > 0:
+                self.display_error(returned_msgs, message.channel)
+            if embed is not None:
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -248,20 +270,9 @@ class PereBlaiseBot:
             args = message.content.split(" ")
             self.handle_life_operations(args.pop(0), message, returned_msgs)
             self.handle_welcome(args.pop(0), message, returned_msgs)
+            self.handle_mj_injury(args.pop(0), message, returned_msgs)
 
-            if args[1] == 'MJblessure':
-                embed_result = self.check_args(message.content,
-                                               4,
-                                               "Syntaxe: '!pereBlaise MJblessure <pseudo> <valeur>'")
-                if embed_result is None and message.author.id == MJ_ID:
-                    user, value = self.get_user_value(message.content)
-                    embed = discord.Embed(color=0x00ff00)
-                    self.apply_injury(embed, user, value)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                else:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'MJsoin':
+            if args[1] == 'MJsoin':
                 embed_result = self.check_args(message.content,
                                                4,
                                                "Syntaxe: '!pereBlaise MJsoin <pseudo> <valeur>'")
@@ -437,4 +448,6 @@ class PereBlaiseBot:
                                                     content=("Hello jeune aventurier!\n"
                                                              "Je ne te comprends pas."
                                                              " Va donc voir le channel <#"+HELP_CHANNEL+">")))
+        ErrorManager.clear_error()
         return returned_msgs
+

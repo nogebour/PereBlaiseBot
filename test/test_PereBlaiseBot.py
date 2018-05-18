@@ -8,28 +8,20 @@ import discord
 
 
 def test_check_args():
+    src.Error.ErrorManager.ErrorManager().clear_error()
     bot = src.PereBlaiseBot.PereBlaiseBot()
     help_msg = "error Message"
 
-    embed = bot.check_args("test 1 2 3", 4, help_msg)
-    if embed is None:
-        assert True
-    else:
-        assert False
+    bot.check_args("test 1 2 3", 4, help_msg)
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
 
-    embed = bot.check_args("test 1 2 3 4", 4, help_msg)
-    if embed is None:
-        assert True
-    else:
-        assert False
+    bot.check_args("test 1 2 3 4", 4, help_msg)
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
 
-    embed = bot.check_args("test 1 23", 4, help_msg)
-    if embed is None:
-        assert False
-    else:
-        assert len(embed.fields) == 1
-        assert embed.fields[0].value == help_msg
-        assert embed.fields[0].name == "Erreur"
+    bot.check_args("test 1 23", 4, help_msg)
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
+    assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
+        src.Error.ErrorManager.ErrorCode.INVALID_SYNTAX
 
 
 def test_extract_id():
@@ -72,6 +64,8 @@ def test_get_user_value():
         assert True
     except Exception:
         assert False
+
+    assert bot.get_user_value("test <@!123456789> 12", 1, 2) == ("123456789", 12)
 
 
 def test_get_value():
@@ -483,6 +477,18 @@ def test_handle_life_operations_not_integer():
     returned_msg = []
 
     bot.handle_life_operations(["toto"], message, returned_msg)
+
+    assert len(returned_msg) == 0
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def test_handle_welcome():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.handle_life_operations(["hi"], message, returned_msg)
 
     assert len(returned_msg) == 0
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0

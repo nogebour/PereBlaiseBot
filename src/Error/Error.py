@@ -41,3 +41,4 @@ class Error:
             "', Error Message:'"+(self.error_message % tuple(self.error_args)) +\
             "', Context: '"+self.context +\
             "', Timestamp: "+str(self.timestamp)+"]"
+
