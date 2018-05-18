@@ -436,3 +436,10 @@ def test_handle_insults():
     result, gif = bot.handle_insults("blaise toto")
     assert not result
     assert len(gif) == 0
+
+
+def test_detect_command_keyword():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    assert bot.detect_command_keyword("pèreBlàise")
+    assert bot.detect_command_keyword("pB")
+

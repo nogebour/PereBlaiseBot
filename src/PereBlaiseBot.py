@@ -1,6 +1,7 @@
 import discord
 import random
 import re
+import unidecode
 
 from .CharacterDBHandler import CharacterDBHandler
 from .Settings import SettingsHandler
@@ -186,7 +187,7 @@ class PereBlaiseBot:
             return False
 
     def handle_insults(self, message):
-        lowered_msg = message.lower()
+        lowered_msg = unidecode.unidecode(message.lower())
         if "blaise" in lowered_msg and\
                 ("fuck" in lowered_msg or
                  "encul" in lowered_msg or
@@ -218,28 +219,20 @@ class PereBlaiseBot:
         else:
             return False, []
 
+    def detect_command_keyword(self, message):
+        message = unidecode.unidecode(message).lower()
+        return message.startswith('pereblaise') or \
+            message.startswith('pb')
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
         if result_insult:
             return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
-        elif message.content.startswith('pereBlaise') or\
-                message.content.startswith('PereBlaise') or\
-                message.content.startswith('PèreBlaise') or\
-                message.content.startswith('pèreBlaise') or\
-                message.content.startswith('pB') or\
-                message.content.startswith('PB') or\
-                message.content.startswith('pb') or\
-                message.content.startswith('Pb'):
+        elif self.detect_command_keyword(message.content):
             args = message.content.split(" ")
             if self.represents_int(args[1]):
-                change = int(args[1])
-                embed = discord.Embed(color=0x00ff00)
-                if change > 0:
-                    self.apply_heal(embed, message.author.id, change)
-                else:
-                    self.apply_injury(embed, message.author.id, (0 - change))
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+                self.decode_life_operations(args, message, returned_msgs)
 
             elif args[1] == 'hi':
                 embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
@@ -435,3 +428,12 @@ class PereBlaiseBot:
                                                              "Je ne te comprends pas."
                                                              " Va donc voir le channel <#"+HELP_CHANNEL+">")))
         return returned_msgs
+
+    def decode_life_operations(self, args, message, returned_msgs):
+        change = int(args[1])
+        embed = discord.Embed(color=0x00ff00)
+        if change > 0:
+            self.apply_heal(embed, message.author.id, change)
+        else:
+            self.apply_injury(embed, message.author.id, (0 - change))
+        returned_msgs.append(DiscordMessage(message.channel, embed=embed))
