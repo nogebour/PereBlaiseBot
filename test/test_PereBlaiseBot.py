@@ -432,3 +432,7 @@ def test_handle_insults():
     result, gif = bot.handle_insults("blaise toto pute")
     assert result
     assert len(gif) > 0
+
+    result, gif = bot.handle_insults("blaise toto")
+    assert not result
+    assert len(gif) == 0
