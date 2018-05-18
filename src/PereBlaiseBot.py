@@ -224,18 +224,20 @@ class PereBlaiseBot:
         return message.startswith('pereblaise') or \
             message.startswith('pb')
 
-    def handle_life_operations(self, str_change, message, returned_msgs):
-        try:
-            change = int(str_change)
-        except ValueError:
-            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "handle_life_operations")
-            return
-        embed = discord.Embed(color=0x00ff00)
-        if change > 0:
-            self.apply_heal(embed, message.author.id, change)
-        else:
-            self.apply_injury(embed, message.author.id, (0 - change))
-        returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+    def handle_life_operations(self, parsed_command, message, returned_msgs):
+        if self.represents_int(parsed_command[0]):
+            change = int(parsed_command[0])
+            embed = discord.Embed(color=0x00ff00)
+            if change > 0:
+                self.apply_heal(embed, message.author.id, change)
+            else:
+                self.apply_injury(embed, message.author.id, (0 - change))
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_welcome(self, args, message, returned_msgs):
+        if unidecode.unidecode(args[0]) == 'hi':
+            embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def on_message(self, message):
         returned_msgs = []
@@ -244,14 +246,10 @@ class PereBlaiseBot:
             return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
         elif self.detect_command_keyword(message.content):
             args = message.content.split(" ")
-            if self.represents_int(args[1]):
-                self.handle_life_operations(args[1], message, returned_msgs)
-            elif args[1] == 'hi':
-                embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                print(message.channel.id)
+            self.handle_life_operations(args.pop(0), message, returned_msgs)
+            self.handle_welcome(args.pop(0), message, returned_msgs)
 
-            elif args[1] == 'MJblessure':
+            if args[1] == 'MJblessure':
                 embed_result = self.check_args(message.content,
                                                4,
                                                "Syntaxe: '!pereBlaise MJblessure <pseudo> <valeur>'")
@@ -267,7 +265,7 @@ class PereBlaiseBot:
                 embed_result = self.check_args(message.content,
                                                4,
                                                "Syntaxe: '!pereBlaise MJsoin <pseudo> <valeur>'")
-                if embed_result is None and message.author.name == "nogebour":
+                if embed_result is None and message.author.id == MJ_ID:
                     user, value = self.get_user_value(message.content)
                     embed = discord.Embed(color=0x00ff00)
                     self.apply_heal(embed, user, value)

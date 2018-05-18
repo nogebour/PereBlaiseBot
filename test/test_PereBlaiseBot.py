@@ -453,7 +453,7 @@ def test_handle_life_operations_heal():
 
     bot.apply_heal = MagicMock()
 
-    bot.handle_life_operations("2", message, returned_msg)
+    bot.handle_life_operations(["2"], message, returned_msg)
 
     assert len(returned_msg) == 1
     bot.apply_heal.assert_called_once_with(returned_msg[0].embed_msg, "987654321", 2)
@@ -468,7 +468,33 @@ def test_handle_life_operations_injury():
 
     bot.apply_injury = MagicMock()
 
-    bot.handle_life_operations("-2", message, returned_msg)
+    bot.handle_life_operations(["-2"], message, returned_msg)
 
     assert len(returned_msg) == 1
     bot.apply_injury.assert_called_once_with(returned_msg[0].embed_msg, "987654321", 2)
+
+
+def test_handle_life_operations_not_integer():
+    src.Error.ErrorManager.ErrorManager().clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.author.id = "987654321"
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.handle_life_operations(["toto"], message, returned_msg)
+
+    assert len(returned_msg) == 0
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def test_handle_welcome():
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    returned_msg = []
+
+    bot.handle_life_operations(["hi"], message, returned_msg)
+
+    assert len(returned_msg) == 0
+    assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
