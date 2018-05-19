@@ -648,3 +648,83 @@ def test_gm_heal_not_matched():
     bot.handle_gm_heal(["toto", "<@123456789>", "2"], message, returned_msgs)
     assert len(returned_msgs) == 1
     assert returned_msgs[0].discord_channel == "1234567890"
+
+
+def test_injury():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    error_mgr.add_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_injury = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb blessures 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_injury(["blessures", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 3
+    assert returned_msgs[2].discord_channel == "123456789"
+    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
+    assert len(error_mgr.error_log) == 1
+
+
+def test_injury_not_matched():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb toto 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_injury(["toto", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].discord_channel == "1234567890"
+
+
+def test_heal():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    error_mgr.add_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_heal = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb soins 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_heal(["soins", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 3
+    assert returned_msgs[2].discord_channel == "123456789"
+    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
+    assert len(error_mgr.error_log) == 1
+
+
+def test_hea_not_matched():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb toto 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_heal(["toto", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].discord_channel == "1234567890"

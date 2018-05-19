@@ -8,7 +8,6 @@ from .Settings import SettingsHandler
 from .Database.DbHandler import DbHandler
 from .Error.ErrorManager import ErrorManager, ErrorCode
 
-HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '411248354534752256'
 MJ_ID = '294164488427405312'
 
@@ -286,28 +285,31 @@ class PereBlaiseBot:
 
     def handle_injury(self, args, message, returned_msgs):
         syntax_msg = "pereBlaise blessure <valeur>"
-        if args[0] == 'blessure':
+        if args[0].startswith("blessure"):
             self.check_args(message.content, 3, syntax_msg)
 
-            value = self.get_value(message.content, 1)
+            value = self.get_value(message.content)
             embed = discord.Embed(color=0x00ff00)
             self.apply_injury(embed, message.author.id, value)
-            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)
+
             if embed is not None:
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def handle_heal(self, args, message, returned_msgs):
-        if args[0] == 'soin' or args[0] == 'soins':
-            syntax_msg = "pereBlaise soin <valeur>"
+        syntax_msg = "pereBlaise soin <valeur>"
+        if args[0].startswith("soin"):
             self.check_args(message.content, 2, syntax_msg)
-            value = self.get_value(message.content, 1)
+
+            value = self.get_value(message.content)
             embed = discord.Embed(color=0x00ff00)
             self.apply_heal(embed, message.author.id, value)
 
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)
+
             if embed is not None:
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
@@ -337,11 +339,6 @@ class PereBlaiseBot:
             self.handle_time_walk_rest(args, message, returned_msgs)
             self.handle_save(args, message)
             self.handle_roll(args, message, returned_msgs)
-
-#                returned_msgs.append(DiscordMessage(message.channel,
-#                                                    content=("Hello jeune aventurier!\n"
-#                                                             "Je ne te comprends pas."
-#                                                             " Va donc voir le channel <#"+HELP_CHANNEL+">")))
         ErrorManager().clear_error()
         return returned_msgs
 
