@@ -275,6 +275,9 @@ class PereBlaiseBot:
                 user, value = self.get_user_value(message.content, 2, 3)
                 embed = discord.Embed(color=0x00ff00)
                 self.apply_heal(embed, user, value)
+            else:
+                ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY,
+                                         "handle_gm_heal")
 
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)

@@ -311,6 +311,7 @@ def test_compute_and_display_single_operation():
     assert str_display == "4+(1)"
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
 
+
 def test_compute_and_display_single_operation_wrong_syntax():
     src.Error.ErrorManager.ErrorManager().clear_error()
     bot = src.PereBlaiseBot.PereBlaiseBot()
@@ -323,6 +324,7 @@ def test_compute_and_display_single_operation_wrong_syntax():
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.INVALID_SYNTAX
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_args[0] == "[0-9]*[d,D][0-9]*"
+
 
 def test_compute_and_display_single_operation_propagate_errors():
     src.Error.ErrorManager.ErrorManager().clear_error()
@@ -378,7 +380,7 @@ def test_roll_ok():
     random.randint = MagicMock(return_value=2)
 
     str_display = bot.roll("1d6 + 2d12 & 12 & 1D6 < 2 & 1D6 < 5")
-    print (str_display)
+    print(str_display)
     assert str_display == "1d6+2d12=(2)+(2+2)=6\n12=12=12\n1D6=(2)=2<2 --> Echec\n1D6=(2)=2<5 --> Reussite"
 
 
@@ -572,6 +574,7 @@ def test_gm_injury_not_gm():
     assert returned_msgs[1].discord_channel == "123456789"
     assert returned_msgs[1].embed_msg.fields[0].value == str(src.Error.ErrorManager.ErrorManager.error_log[0])
 
+
 def test_gm_injury_not_matched():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
@@ -589,3 +592,59 @@ def test_gm_injury_not_matched():
     assert len(returned_msgs) == 1
     assert returned_msgs[0].discord_channel == "1234567890"
 
+
+def test_gm_heal():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_heal = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+    message.content = "pb MJsoins <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_heal(["MJsoin", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].discord_channel == "123456789"
+
+
+def test_gm_heal_not_gm():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb MJsoin <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_heal(["MJsoin", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 2
+    assert returned_msgs[0].discord_channel == "1234567890"
+    assert returned_msgs[1].discord_channel == "123456789"
+    assert returned_msgs[1].embed_msg.fields[0].value == str(src.Error.ErrorManager.ErrorManager.error_log[0])
+
+
+def test_gm_heal_not_matched():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb toto <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_heal(["toto", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].discord_channel == "1234567890"
