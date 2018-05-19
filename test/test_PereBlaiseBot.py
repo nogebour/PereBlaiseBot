@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from unittest.mock import Mock
 
 import random
 import src.PereBlaiseBot
@@ -530,3 +531,43 @@ def test_display_error_with_empty_error_log():
 
     bot.display_error(returned_msgs, "123456789")
     assert len(returned_msgs) == 1
+
+
+def test_gm_injury():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_injury = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+    message.content = "pb MJblessure <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_injury(["MJblessure", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].discord_channel == "123456789"
+    bot.apply_injury.call_args()
+
+
+def test_gm_injury_not_gm():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb MJblessure <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_injury(["MJblessure", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 2
+    assert returned_msgs[0].discord_channel == "1234567890"
+    assert returned_msgs[1].discord_channel == "123456789"
+    assert returned_msgs[1].embed_msg.fields[0].value == str(src.Error.ErrorManager.ErrorManager.error_log[0])

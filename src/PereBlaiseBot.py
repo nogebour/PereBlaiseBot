@@ -31,7 +31,7 @@ class PereBlaiseBot:
     def check_args(self, message, nb_args, syntax_msg):
         array_args = message.split(" ")
         if len(array_args) < nb_args:
-            ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "make_time_operation", [syntax_msg])
+            ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "check_args", [syntax_msg])
 
     def get_user(self, args, message, index_user):
         user_id = None
@@ -253,8 +253,13 @@ class PereBlaiseBot:
         #Check
             if message.author.id == MJ_ID:
                 user, value = self.get_user_value(message.content, 2, 3)
+                print(str(user)+" "+str(value))
                 embed = discord.Embed(color=0x00ff00)
                 self.apply_injury(embed, user, value)
+            else:
+                ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY,
+                                         "handle_gm_injury")
+
         #display
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)
