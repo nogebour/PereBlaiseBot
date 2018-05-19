@@ -504,3 +504,29 @@ def test_handle_welcome_not_matched():
 
     assert len(returned_msg) == 0
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 0
+
+
+def test_display_error():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    error_mgr.add_error()
+    error_mgr.add_error(src.Error.ErrorManager.ErrorCode.INVALID_SYNTAX,
+                        "Test display error",
+                        ["pb test diaplays"])
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("123456789", "test")]
+
+    bot.display_error(returned_msgs, "123456789")
+    assert len(returned_msgs) == 3
+
+
+def test_display_error_with_empty_error_log():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("123456789", "test")]
+
+    bot.display_error(returned_msgs, "123456789")
+    assert len(returned_msgs) == 1
