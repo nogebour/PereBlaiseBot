@@ -571,3 +571,21 @@ def test_gm_injury_not_gm():
     assert returned_msgs[0].discord_channel == "1234567890"
     assert returned_msgs[1].discord_channel == "123456789"
     assert returned_msgs[1].embed_msg.fields[0].value == str(src.Error.ErrorManager.ErrorManager.error_log[0])
+
+def test_gm_injury_not_matched():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "987654312"
+    message.content = "pb toto <@123456789> 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_gm_injury(["toto", "<@123456789>", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].discord_channel == "1234567890"
+
