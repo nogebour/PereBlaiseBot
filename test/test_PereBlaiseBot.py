@@ -226,9 +226,10 @@ def test_apply_heal():
 
     embed = discord.Embed()
 
-    bot.apply_heal(embed, "123456789", "10")
+    embed_res = bot.apply_heal(embed, "123456789", "10")
     assert embed.fields[0].value == "Le joueur <@123456789> a soigné 10 points de vie.\nIl reste 11 points de vie."
     assert embed.fields[0].name == "Soin enregistré"
+    assert embed_res == embed
 
 
 def test_apply_injury():
@@ -238,9 +239,10 @@ def test_apply_injury():
 
     embed = discord.Embed()
 
-    bot.apply_injury(embed, "123456789", "10")
+    embed_res = bot.apply_injury(embed, "123456789", "10")
     assert embed.fields[0].value == "Le joueur <@123456789> a reçu 10 points de dégats.\nIl reste 11 points de vie."
     assert embed.fields[0].name == "Blessure enregistrée"
+    assert embed_res == embed
 
 
 def test_throw_dices():
@@ -653,7 +655,6 @@ def test_gm_heal_not_matched():
 def test_injury():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
-    error_mgr.add_error()
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
     bot.apply_injury = Mock()
@@ -666,10 +667,9 @@ def test_injury():
     returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
 
     bot.handle_injury(["blessures", "2"], message, returned_msgs)
-    assert len(returned_msgs) == 3
-    assert returned_msgs[2].discord_channel == "123456789"
-    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
-    assert len(error_mgr.error_log) == 1
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].discord_channel == "123456789"
+    assert len(error_mgr.error_log) == 0
 
 
 def test_injury_not_matched():
@@ -693,7 +693,6 @@ def test_injury_not_matched():
 def test_heal():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
-    error_mgr.add_error()
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
     bot.apply_heal = Mock()
@@ -706,13 +705,12 @@ def test_heal():
     returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
 
     bot.handle_heal(["soins", "2"], message, returned_msgs)
-    assert len(returned_msgs) == 3
-    assert returned_msgs[2].discord_channel == "123456789"
-    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
-    assert len(error_mgr.error_log) == 1
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].discord_channel == "123456789"
+    assert len(error_mgr.error_log) == 0
 
 
-def test_hea_not_matched():
+def test_heal_not_matched():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
 
@@ -728,3 +726,46 @@ def test_hea_not_matched():
     bot.handle_heal(["toto", "2"], message, returned_msgs)
     assert len(returned_msgs) == 1
     assert returned_msgs[0].discord_channel == "1234567890"
+
+
+def test_heal_error():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    error_mgr.add_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_heal = Mock(return_value=None)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb soins 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_heal(["soins", "2"], message, returned_msgs)
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
+    assert len(error_mgr.error_log) == 1
+
+
+def test_injury_error():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+    error_mgr.add_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.apply_injury = Mock(return_value=None)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb blessures 2"
+
+    returned_msgs = [src.PereBlaiseBot.DiscordMessage("1234567890", "test")]
+
+    bot.handle_injury(["blessures", "2"], message, returned_msgs)
+
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
+    assert len(error_mgr.error_log) == 1

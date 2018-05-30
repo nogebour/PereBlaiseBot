@@ -96,6 +96,7 @@ class PereBlaiseBot:
             value="Le joueur <@" + user + "> a soigné " + str(
                 value) + " points de vie.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
+        return embed
 
     def apply_injury(self, embed, user, value):
         self.character_db_handler.initialize()
@@ -105,6 +106,7 @@ class PereBlaiseBot:
             value="Le joueur <@" + user + "> a reçu " + str(
                 value) + " points de dégats.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
+        return embed
 
     def roll(self, dice_cmd):
         final_result = ''
@@ -289,8 +291,7 @@ class PereBlaiseBot:
             self.check_args(message.content, 3, syntax_msg)
 
             value = self.get_value(message.content)
-            embed = discord.Embed(color=0x00ff00)
-            self.apply_injury(embed, message.author.id, value)
+            embed = self.apply_injury(discord.Embed(color=0x00ff00), message.author.id, value)
 
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)
@@ -304,8 +305,7 @@ class PereBlaiseBot:
             self.check_args(message.content, 2, syntax_msg)
 
             value = self.get_value(message.content)
-            embed = discord.Embed(color=0x00ff00)
-            self.apply_heal(embed, message.author.id, value)
+            embed = self.apply_heal(discord.Embed(color=0x00ff00), message.author.id, value)
 
             if len(ErrorManager.error_log) > 0:
                 self.display_error(returned_msgs, message.channel)
