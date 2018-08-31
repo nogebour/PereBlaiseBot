@@ -769,3 +769,46 @@ def test_injury_error():
     assert len(returned_msgs) == 2
     assert returned_msgs[1].embed_msg.fields[0].value == str(error_mgr.error_log[0])
     assert len(error_mgr.error_log) == 1
+
+def test_handle_roll():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    expected_value = "1D6+6 = 24 ?? WTF"
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.roll = Mock(return_value=expected_value)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb roll 1D6+6"
+
+    returned_msgs = []
+
+    bot.handle_roll(["roll", "1D6+6", "TOTO"], message, returned_msgs)
+
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].str_msg == ("<@"+message.author.id+">\n"+expected_value)
+    assert len(error_mgr.error_log) == 0
+
+
+def test_handle_roll_error_grammar():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    expected_value = "1D6+6 = 24 ?? WTF"
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.roll = Mock(return_value=expected_value)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = "111111"
+    message.content = "pb rolled 1D6+6"
+
+    returned_msgs = []
+
+    bot.handle_roll(["rolleed", "1D6+6", "TOTO"], message, returned_msgs)
+    assert len(returned_msgs) == 0
+
+    bot.handle_roll(["rolleed"], message, returned_msgs)
+    assert len(returned_msgs) == 0

@@ -313,6 +313,12 @@ class PereBlaiseBot:
             if embed is not None:
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
+    def handle_roll(self, args, message, returned_msgs):
+        if args[0].lower() == "roll" and len(args) > 2:
+            returned_msgs.append(DiscordMessage(message.channel,
+                                                content=("<@" + message.author.id + ">\n" +
+                                                         self.roll(''.join(args[2:])))))
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -341,12 +347,6 @@ class PereBlaiseBot:
             self.handle_roll(args, message, returned_msgs)
         ErrorManager().clear_error()
         return returned_msgs
-
-    def handle_roll(self, args, message, returned_msgs):
-        if args[1].lower() == "roll" and len(args) > 2:
-            returned_msgs.append(DiscordMessage(message.channel,
-                                                content=("<@" + message.author.id + ">\n" +
-                                                         self.roll(''.join(args[2:])))))
 
     def handle_save(self, args, message):
         if args[1] == "save":
