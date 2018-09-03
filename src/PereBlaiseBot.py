@@ -26,6 +26,7 @@ class DiscordMessage:
 class PereBlaiseBot:
     def __init__(self):
         self.character_db_handler = CharacterDBHandler()
+        self.db_handler = DbHandler()
 
     def check_args(self, message, nb_args, syntax_msg):
         array_args = message.split(" ")
@@ -319,6 +320,13 @@ class PereBlaiseBot:
                                                 content=("<@" + message.author.id + ">\n" +
                                                          self.roll(''.join(args[2:])))))
 
+    def handle_save(self, args, message, returned_msgs):
+        if args[0].lower() == "save" and message.author.id == MJ_ID:
+                self.db_handler.retrieve_game()
+                self.db_handler.save_snapshot_game()
+                returned_msgs.append(DiscordMessage(message.channel, content="Game saved"))
+
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -347,13 +355,6 @@ class PereBlaiseBot:
             self.handle_roll(args, message, returned_msgs)
         ErrorManager().clear_error()
         return returned_msgs
-
-    def handle_save(self, args, message):
-        if args[1] == "save":
-            if message.author.id == MJ_ID:
-                db_handler = DbHandler()
-                db_handler.retrieve_game()
-                db_handler.save_snapshot_game()
 
     def handle_time_walk_rest(self, args, message, returned_msgs):
         if args[1] == "temps" and len(args) == 5:

@@ -812,3 +812,51 @@ def test_handle_roll_error_grammar():
 
     bot.handle_roll(["rolleed"], message, returned_msgs)
     assert len(returned_msgs) == 0
+
+
+def test_handle_save_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.db_handler.retrieve_game = Mock()
+    bot.db_handler.save_snapshot_game = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+    message.content = "pb save sdkdfj"
+
+    returned_msgs = []
+
+    bot.handle_save(["saVe", "sdkfj"], message, returned_msgs)
+    bot.db_handler.save_snapshot_game.assert_called_once_with()
+    bot.db_handler.retrieve_game.assert_called_once_with()
+    assert returned_msgs[0].str_msg == "Game saved"
+
+
+def test_handle_save_ko():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.db_handler.retrieve_game = Mock()
+    bot.db_handler.save_snapshot_game = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+    message.content = "pb save sdkdfj"
+
+    returned_msgs = []
+
+    bot.handle_save(["savedb","save", "sdkfj"], message, returned_msgs)
+    bot.db_handler.save_snapshot_game.assert_not_called()
+    bot.db_handler.retrieve_game.assert_not_called()
+    assert len(returned_msgs) == 0
+
+    message.author.id = "123148674612"
+    bot.handle_save(["save", "sdkfj"], message, returned_msgs)
+    bot.db_handler.save_snapshot_game.assert_not_called()
+    bot.db_handler.retrieve_game.assert_not_called()
+    assert len(returned_msgs) == 0
