@@ -1,5 +1,4 @@
-from unittest.mock import MagicMock
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, call, ANY
 
 import random
 import src.PereBlaiseBot
@@ -134,12 +133,12 @@ def test_make_time_operation_not_gm():
                                         {'PLAYER': "987654321"}]}}
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.db_handler.data = json
+    bot.settings_handler = src.Settings.SettingsHandler()
+    bot.settings_handler.db_handler.data = json
 
     embed = discord.Embed()
 
-    assert not bot.make_time_operation("10", message, settings, embed)
+    assert not bot.make_time_operation("10", message, embed)
     assert len(src.Error.ErrorManager.ErrorManager.error_log) == 1
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.GM_COMMAND_ONLY
@@ -158,13 +157,13 @@ def test_make_time_operation_mj():
                                         {'PLAYER': "987654321"}]}}
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.data = json
-    settings.fill_data()
+    bot.settings_handler = src.Settings.SettingsHandler()
+    bot.settings_handler.data = json
+    bot.settings_handler.fill_data()
 
     embed = discord.Embed()
 
-    assert bot.make_time_operation("10", message, settings, embed)
+    assert bot.make_time_operation("10", message, embed)
     assert embed.fields[0].value == "<@294164488427405312> a demandé l'ajout de 10 minutes.\n" \
                                     "Nous sommes donc maintenant le 02/01/2018 à 02:12."
 
@@ -183,13 +182,13 @@ def test_make_time_operation_not_an_integer():
                                         {'PLAYER': "987654321"}]}}
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.data = json
-    settings.fill_data()
+    bot.settings_handler = src.Settings.SettingsHandler()
+    bot.settings_handler.data = json
+    bot.settings_handler.fill_data()
 
     embed = discord.Embed()
 
-    assert not bot.make_time_operation("toto", message, settings, embed)
+    assert not bot.make_time_operation("toto", message, embed)
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER
 
@@ -208,13 +207,13 @@ def test_make_time_operation_negative():
                                         {'PLAYER': "987654321"}]}}
 
     bot = src.PereBlaiseBot.PereBlaiseBot()
-    settings = src.Settings.SettingsHandler()
-    settings.data = json
-    settings.fill_data()
+    bot.settings_handler = src.Settings.SettingsHandler()
+    bot.settings_handler.data = json
+    bot.settings_handler.fill_data()
 
     embed = discord.Embed()
 
-    assert not bot.make_time_operation("-10", message, settings, embed)
+    assert not bot.make_time_operation("-10", message, embed)
     assert src.Error.ErrorManager.ErrorManager.error_log[0].error_type ==\
         src.Error.ErrorManager.ErrorCode.NOT_A_POSITIVE_INTEGER
 
@@ -859,4 +858,104 @@ def test_handle_save_ko():
     bot.handle_save(["save", "sdkfj"], message, returned_msgs)
     bot.db_handler.save_snapshot_game.assert_not_called()
     bot.db_handler.retrieve_game.assert_not_called()
+    assert len(returned_msgs) == 0
+
+
+def test_handle_walk_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.handle_rest = Mock()
+    bot.settings_handler.handle_walk = Mock()
+    bot.make_time_operation = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb temps marche normal 60"
+
+    bot.handle_time_walk_rest(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert bot.settings_handler.handle_walk.call_args_list == [call('normal', '60', ANY)]
+    assert bot.settings_handler.handle_rest.call_args_list == []
+    assert len(returned_msgs) == 1
+
+
+def test_handle_rest_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.handle_rest = Mock()
+    bot.settings_handler.handle_walk = Mock()
+    bot.make_time_operation = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps repos normal 60"
+
+    bot.handle_time_walk_rest(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert bot.settings_handler.handle_rest.call_args_list == [call('normal', '60', ANY)]
+    assert bot.settings_handler.handle_walk.call_args_list == []
+    assert len(returned_msgs) == 1
+
+
+def test_handle_walk_rest_ko_time():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.handle_rest = Mock()
+    bot.settings_handler.handle_walk = Mock()
+    bot.make_time_operation = Mock(return_value=False)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb temps repos normal 60"
+
+    bot.handle_time_walk_rest(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert bot.settings_handler.handle_rest.call_args_list == []
+    assert bot.settings_handler.handle_walk.call_args_list == []
+    assert len(returned_msgs) == 1
+
+
+def test_handle_walk_rest_ko_grammar():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.handle_rest = Mock()
+    bot.settings_handler.handle_walk = Mock()
+    bot.make_time_operation = Mock(return_value=False)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb tempsasas repos normal 60"
+
+    bot.handle_time_walk_rest(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == []
+    assert bot.make_time_operation.call_args_list == []
+    assert bot.settings_handler.handle_rest.call_args_list == []
+    assert bot.settings_handler.handle_walk.call_args_list == []
     assert len(returned_msgs) == 0

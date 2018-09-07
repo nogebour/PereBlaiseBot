@@ -27,6 +27,7 @@ class PereBlaiseBot:
     def __init__(self):
         self.character_db_handler = CharacterDBHandler()
         self.db_handler = DbHandler()
+        self.settings_handler = SettingsHandler()
 
     def check_args(self, message, nb_args, syntax_msg):
         array_args = message.split(" ")
@@ -65,7 +66,7 @@ class PereBlaiseBot:
         array_args = message.split(" ")
         return array_args[2]
 
-    def make_time_operation(self, delta_min, message, settings, embed):
+    def make_time_operation(self, delta_min, message, embed):
         result = False
         if message.author.id != MJ_ID:
             ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY, "make_time_operation")
@@ -79,7 +80,7 @@ class PereBlaiseBot:
         if delta <= 0:
             ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "make_time_operation")
             return result
-        current_time = settings.add_time(delta)
+        current_time = self.settings_handler.add_time(delta)
         result = True
         embed.add_field(
             name="Temps ajouté",
@@ -326,6 +327,16 @@ class PereBlaiseBot:
                 self.db_handler.save_snapshot_game()
                 returned_msgs.append(DiscordMessage(message.channel, content="Game saved"))
 
+    def handle_time_walk_rest(self, args, message, returned_msgs):
+        if args[0].lower() == "temps" and len(args) == 4 and (args[1].lower() == "repos" or args[1].lower() == "marche"):
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            if self.make_time_operation(args[3], message, embed):
+                if args[1].lower() == 'repos':
+                    self.settings_handler.handle_rest(args[2], args[3], embed)
+                else:
+                    self.settings_handler.handle_walk(args[2], args[3], embed)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def on_message(self, message):
         returned_msgs = []
@@ -349,35 +360,19 @@ class PereBlaiseBot:
             self.handle_money_operation_gm(args, message, returned_msgs)
             self.handle_time(args, message, returned_msgs)
             self.handle_time_start_game(args, message, returned_msgs)
-            self.handle_time_operation(args, message, returned_msgs)
-            self.handle_time_walk_rest(args, message, returned_msgs)
-            self.handle_save(args, message)
-            self.handle_roll(args, message, returned_msgs)
+            self.handle_time_operation(args.pop(0), message, returned_msgs)
+            self.handle_time_walk_rest(args.pop(0), message, returned_msgs)
+            self.handle_save(args.pop(0), message)
+            self.handle_roll(args.pop(0), message, returned_msgs)
         ErrorManager().clear_error()
         return returned_msgs
 
-    def handle_time_walk_rest(self, args, message, returned_msgs):
-        if args[1] == "temps" and len(args) == 5:
-            if args[2] == "repos" or args[2] == "marche":
-                settings = SettingsHandler()
-                settings.initialize()
-                embed = discord.Embed(color=0x00ff00)
-                if self.make_time_operation(args[4], message, settings, embed):
-                    if args[2] == 'repos':
-                        print("repos")
-                        settings.handle_rest(args[3], args[4], embed)
-                    elif args[2] == 'marche':
-                        print("Marche")
-                        settings.handle_walk(args[3], args[4], embed)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-
     def handle_time_operation(self, args, message, returned_msgs):
-        if args[1] == "temps" and len(args) == 3:
-            settings = SettingsHandler()
-            settings.initialize()
+        if args[0] == "temps" and len(args) == 2:
+            self.settings_handler.initialize()
             embed = discord.Embed(color=0x00ff00)
-            if self.make_time_operation(args[2], message, settings, embed):
-                settings.save_settings()
+            if self.make_time_operation(args[1], message, embed):
+                self.settings_handler.save_settings()
             returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def handle_time_start_game(self, args, message, returned_msgs):
