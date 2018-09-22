@@ -348,6 +348,19 @@ class PereBlaiseBot:
                 self.settings_handler.save_settings()
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
+    def handle_time_start_game(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temp") and args[1].lower() == "passe" and len(args) == 2:
+            self.settings_handler.initialize()
+            delta = self.settings_handler.get_elapsed_time()
+            embed = discord.Embed(color=0x00ff00)
+            embed.add_field(
+                name="Durée de l'aventure",
+                value=("Pour information l'aventure à commencé depuis " +
+                       str(delta)).replace("day", "jour"),
+                inline=False)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -369,26 +382,13 @@ class PereBlaiseBot:
             self.handle_money_operation(args, message, returned_msgs)
             self.handle_money_operation_gm(args, message, returned_msgs)
             self.handle_time(args, message, returned_msgs)
-            self.handle_time_start_game(args, message, returned_msgs)
+            self.handle_time_start_game(args.pop(0), message, returned_msgs)
             self.handle_time_operation(args.pop(0), message, returned_msgs)
             self.handle_time_walk_rest(args.pop(0), message, returned_msgs)
             self.handle_save(args.pop(0), message)
             self.handle_roll(args.pop(0), message, returned_msgs)
         ErrorManager().clear_error()
         return returned_msgs
-
-    def handle_time_start_game(self, args, message, returned_msgs):
-        if args[1] == "temps" and args[2] == "passe" and len(args) == 3:
-            settings = SettingsHandler()
-            settings.initialize()
-            delta = settings.get_elapsed_time()
-            embed = discord.Embed(color=0x00ff00)
-            embed.add_field(
-                name="Durée de l'aventure",
-                value=("Pour information l'aventure à commencé depuis " +
-                       str(delta)).replace("day", "jour"),
-                inline=False)
-            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def handle_time(self, args, message, returned_msgs):
         if args[1] == "temps" and len(args) == 2:

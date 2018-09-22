@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, Mock, call, ANY
 
 import random
+import datetime
 import src.PereBlaiseBot
 import src.Settings
 import src.Error.ErrorManager
@@ -1027,4 +1028,52 @@ def test_handle_time_ko_time():
     assert bot.settings_handler.initialize.call_args_list == [call()]
     assert bot.settings_handler.save_settings.call_args_list == []
     assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert len(returned_msgs) == 0
+
+
+def test_handle_elapsed_time_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+
+    bot.settings_handler.current_time = datetime.datetime.now()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps pasSe"
+
+    bot.settings_handler.start_time = bot.settings_handler.current_time - datetime.timedelta(hours=1)
+    bot.handle_time_start_game(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].embed_msg.fields[0].value == "Pour information l'aventure à commencé depuis 1:00:00"
+
+    bot.settings_handler.start_time = bot.settings_handler.current_time - datetime.timedelta(hours=1, days=1)
+    bot.handle_time_start_game(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call(), call()]
+    assert len(returned_msgs) == 2
+    assert returned_msgs[1].embed_msg.fields[0].value == "Pour information l'aventure à commencé depuis 1 jour, 1:00:00"
+
+
+def test_handle_elapsed_time_ko():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps passSe"
+
+    bot.handle_time_start_game(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == []
     assert len(returned_msgs) == 0
