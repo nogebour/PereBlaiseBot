@@ -184,6 +184,8 @@ class PereBlaiseBot:
         except ValueError:
             return False
 
+
+    ### Command Interpretation part ###
     def handle_insults(self, message):
         lowered_msg = unidecode.unidecode(message.lower())
         if "blaise" in lowered_msg and\
@@ -338,6 +340,14 @@ class PereBlaiseBot:
                     self.settings_handler.handle_walk(args[2], args[3], embed)
             returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
+    def handle_time_operation(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temp") and len(args) == 2:
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            if self.make_time_operation(args[1], message, embed):
+                self.settings_handler.save_settings()
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -366,14 +376,6 @@ class PereBlaiseBot:
             self.handle_roll(args.pop(0), message, returned_msgs)
         ErrorManager().clear_error()
         return returned_msgs
-
-    def handle_time_operation(self, args, message, returned_msgs):
-        if args[0] == "temps" and len(args) == 2:
-            self.settings_handler.initialize()
-            embed = discord.Embed(color=0x00ff00)
-            if self.make_time_operation(args[1], message, embed):
-                self.settings_handler.save_settings()
-            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
     def handle_time_start_game(self, args, message, returned_msgs):
         if args[1] == "temps" and args[2] == "passe" and len(args) == 3:

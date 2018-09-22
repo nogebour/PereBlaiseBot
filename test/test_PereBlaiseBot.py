@@ -959,3 +959,72 @@ def test_handle_walk_rest_ko_grammar():
     assert bot.settings_handler.handle_rest.call_args_list == []
     assert bot.settings_handler.handle_walk.call_args_list == []
     assert len(returned_msgs) == 0
+
+
+def test_handle_time_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.save_settings = Mock()
+    bot.make_time_operation = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps 60"
+
+    bot.handle_time_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert bot.settings_handler.save_settings.call_args_list == [call()]
+    assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert len(returned_msgs) == 1
+
+
+def test_handle_time_ko_grammar():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.save_settings = Mock()
+    bot.make_time_operation = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMsaps 60"
+
+    bot.handle_time_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == []
+    assert bot.settings_handler.save_settings.call_args_list == []
+    assert bot.make_time_operation.call_args_list == []
+    assert len(returned_msgs) == 0
+
+
+def test_handle_time_ko_time():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+    bot.settings_handler.save_settings = Mock()
+    bot.make_time_operation = Mock(return_value=False)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps 60"
+
+    bot.handle_time_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert bot.settings_handler.save_settings.call_args_list == []
+    assert bot.make_time_operation.call_args_list == [call('60', ANY, ANY)]
+    assert len(returned_msgs) == 0
