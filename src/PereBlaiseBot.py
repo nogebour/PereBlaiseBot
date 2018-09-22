@@ -381,7 +381,7 @@ class PereBlaiseBot:
             self.handle_money(args, message, returned_msgs)
             self.handle_money_operation(args, message, returned_msgs)
             self.handle_money_operation_gm(args, message, returned_msgs)
-            self.handle_time(args, message, returned_msgs)
+            self.handle_time(args.pop(0), message, returned_msgs)
             self.handle_time_start_game(args.pop(0), message, returned_msgs)
             self.handle_time_operation(args.pop(0), message, returned_msgs)
             self.handle_time_walk_rest(args.pop(0), message, returned_msgs)
@@ -391,16 +391,15 @@ class PereBlaiseBot:
         return returned_msgs
 
     def handle_time(self, args, message, returned_msgs):
-        if args[1] == "temps" and len(args) == 2:
-            settings = SettingsHandler()
-            settings.initialize()
+        if args[0].lower().startswith("temps") and len(args) == 1:
+            self.settings_handler.initialize()
             embed = discord.Embed(color=0x00ff00)
             embed.add_field(
                 name="Heure du jeu",
                 value="<@" + message.author.id + "> a demandé la date et on est le " +
-                      settings.current_time.strftime("%d/%m/%Y") +
+                      self.settings_handler.current_time.strftime("%d/%m/%Y") +
                       " à " +
-                      settings.current_time.strftime("%H:%M") + ".",
+                      self.settings_handler.current_time.strftime("%H:%M") + ".",
                 inline=False)
             returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 

@@ -962,7 +962,7 @@ def test_handle_walk_rest_ko_grammar():
     assert len(returned_msgs) == 0
 
 
-def test_handle_time_ok():
+def test_handle_time_add_ok():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
 
@@ -985,7 +985,7 @@ def test_handle_time_ok():
     assert len(returned_msgs) == 1
 
 
-def test_handle_time_ko_grammar():
+def test_handle_time_add_ko_grammar():
     error_mgr = src.Error.ErrorManager.ErrorManager()
     error_mgr.clear_error()
 
@@ -1075,5 +1075,50 @@ def test_handle_elapsed_time_ko():
     message.content = "pb teMps passSe"
 
     bot.handle_time_start_game(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == []
+    assert len(returned_msgs) == 0
+
+
+def test_handle_time_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+
+    bot.settings_handler.current_time = datetime.datetime.strptime("12/02/2018 - 18:02", "%d/%m/%Y - %H:%M")
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMps"
+
+    bot.handle_time(message.content.split(" ")[1:], message, returned_msgs)
+    assert bot.settings_handler.initialize.call_args_list == [call()]
+    assert len(returned_msgs) == 1
+    assert returned_msgs[0].embed_msg.fields[0].value == ("<@"+src.PereBlaiseBot.MJ_ID+"> a demandé"
+                                                          " la date et on est le "
+                                                          "12/02/2018 à 18:02.")
+
+
+def test_handle_time_ko():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.settings_handler.initialize = Mock()
+
+    bot.settings_handler.current_time = datetime.datetime.strptime("12/02/2018 - 18:02", "%d/%m/%Y - %H:%M")
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb teMpjs"
+
+    bot.handle_time(message.content.split(" ")[1:], message, returned_msgs)
     assert bot.settings_handler.initialize.call_args_list == []
     assert len(returned_msgs) == 0
