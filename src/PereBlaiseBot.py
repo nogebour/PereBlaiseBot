@@ -361,6 +361,19 @@ class PereBlaiseBot:
             returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
 
+    def handle_time(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temps") and len(args) == 1:
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            embed.add_field(
+                name="Heure du jeu",
+                value="<@" + message.author.id + "> a demandé la date et on est le " +
+                      self.settings_handler.current_time.strftime("%d/%m/%Y") +
+                      " à " +
+                      self.settings_handler.current_time.strftime("%H:%M") + ".",
+                inline=False)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
     def on_message(self, message):
         returned_msgs = []
         result_insult, gif = self.handle_insults(message.content)
@@ -380,7 +393,7 @@ class PereBlaiseBot:
             self.handle_full_info(args, message, returned_msgs)
             self.handle_money(args, message, returned_msgs)
             self.handle_money_operation(args, message, returned_msgs)
-            self.handle_money_operation_gm(args, message, returned_msgs)
+            self.handle_gm_money_operation(args.pop(0), message, returned_msgs)
             self.handle_time(args.pop(0), message, returned_msgs)
             self.handle_time_start_game(args.pop(0), message, returned_msgs)
             self.handle_time_operation(args.pop(0), message, returned_msgs)
@@ -390,34 +403,26 @@ class PereBlaiseBot:
         ErrorManager().clear_error()
         return returned_msgs
 
-    def handle_time(self, args, message, returned_msgs):
-        if args[0].lower().startswith("temps") and len(args) == 1:
-            self.settings_handler.initialize()
-            embed = discord.Embed(color=0x00ff00)
-            embed.add_field(
-                name="Heure du jeu",
-                value="<@" + message.author.id + "> a demandé la date et on est le " +
-                      self.settings_handler.current_time.strftime("%d/%m/%Y") +
-                      " à " +
-                      self.settings_handler.current_time.strftime("%H:%M") + ".",
-                inline=False)
-            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-
-    def handle_money_operation_gm(self, args, message, returned_msgs):
-        if args[1] == 'MJbourse':
+    def handle_gm_money_operation(self, args, message, returned_msgs):
+        if args[0].lower() == 'mjbourse':
             syntax_msg = "pereBlaise MJbourse <user> <or>/<argent>/<bronze>"
             self.check_args(message.content, 4, syntax_msg)
-            user, value = self.get_user_value_str(message.content)
-            db_handler = CharacterDBHandler()
-            db_handler.initialize()
-            gold, silver, bronze = db_handler.money_operation(user, value)
-            embed_result = discord.Embed(color=0x00ff00)
-            embed_result.add_field(
-                name="Operations comptables enregistrés",
-                value="<@" + MJ_ID + ">: Le joueur <@" + user + "> a maintenant " + str(gold) +
-                      " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
-                inline=False)
-            returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
+            if len(ErrorManager.error_log) == 0:
+                user, value = self.get_user_value_str(message.content)
+                if user is None:
+
+                if value is None:
+                    
+                self.character_db_handler.initialize()
+                gold, silver, bronze = self.character_db_handler.money_operation(user, value)
+                embed_result = discord.Embed(color=0x00ff00)
+                embed_result.add_field(
+                    name="Operations comptables enregistrés",
+                    value="<@" + MJ_ID + ">: " +
+                          "Le joueur <@" + user + "> a maintenant " + str(gold) +
+                          " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
+                    inline=False)
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
 
     def handle_money_operation(self, args, message, returned_msgs):
         if args[1] == 'bourse':

@@ -1122,3 +1122,23 @@ def test_handle_time_ko():
     bot.handle_time(message.content.split(" ")[1:], message, returned_msgs)
     assert bot.settings_handler.initialize.call_args_list == []
     assert len(returned_msgs) == 0
+
+
+def test_handle_money_op_gm_ok():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.character_db_handler.initialize = Mock()
+    bot.character_db_handler.money_operation = Mock(return_value=(42, 25, 56))
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb MJbouRse <@!toto> 15/12/23"
+
+    bot.handle_gm_money_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert len(returned_msgs) == 1
+    assert bot.character_db_handler.money_operation.call_args_list == [call('toto', '15/12/23')]
