@@ -393,7 +393,7 @@ class PereBlaiseBot:
             self.handle_full_info(args, message, returned_msgs)
             self.handle_money(args, message, returned_msgs)
             self.handle_money_operation(args, message, returned_msgs)
-            self.handle_gm_money_operation(args.pop(0), message, returned_msgs)
+            self.handle_gm_money_operation(args, message, returned_msgs)
             self.handle_time(args.pop(0), message, returned_msgs)
             self.handle_time_start_game(args.pop(0), message, returned_msgs)
             self.handle_time_operation(args.pop(0), message, returned_msgs)
@@ -409,20 +409,17 @@ class PereBlaiseBot:
             self.check_args(message.content, 4, syntax_msg)
             if len(ErrorManager.error_log) == 0:
                 user, value = self.get_user_value_str(message.content)
-                if user is None:
-
-                if value is None:
-                    
                 self.character_db_handler.initialize()
                 gold, silver, bronze = self.character_db_handler.money_operation(user, value)
-                embed_result = discord.Embed(color=0x00ff00)
-                embed_result.add_field(
-                    name="Operations comptables enregistrés",
-                    value="<@" + MJ_ID + ">: " +
-                          "Le joueur <@" + user + "> a maintenant " + str(gold) +
-                          " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
-                    inline=False)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
+                if len(ErrorManager.error_log) == 0:
+                    embed_result = discord.Embed(color=0x00ff00)
+                    embed_result.add_field(
+                        name="Operations comptables enregistrés",
+                        value="<@" + MJ_ID + ">: " +
+                              "Le joueur <@" + user + "> a maintenant " + str(gold) +
+                              " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
+                        inline=False)
+                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
 
     def handle_money_operation(self, args, message, returned_msgs):
         if args[1] == 'bourse':

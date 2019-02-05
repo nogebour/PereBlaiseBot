@@ -1142,3 +1142,47 @@ def test_handle_money_op_gm_ok():
     bot.handle_gm_money_operation(message.content.split(" ")[1:], message, returned_msgs)
     assert len(returned_msgs) == 1
     assert bot.character_db_handler.money_operation.call_args_list == [call('toto', '15/12/23')]
+
+def test_handle_money_op_gm_ko_incorrect_arg():
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.character_db_handler.initialize = Mock()
+    bot.character_db_handler.money_operation = Mock()
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb MJbouRse 15/12/23"
+
+    bot.handle_gm_money_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert len(returned_msgs) == 0
+    assert bot.character_db_handler.money_operation.call_args_list == []
+    assert bot.character_db_handler.initialize.call_args_list == []
+
+def test_handle_money_op_gm_ko_incorrect_arg_money():
+    def add_error(args, kargs):
+        src.Error.ErrorManager.ErrorManager().add_error(src.Error.ErrorManager.ErrorCode.NOT_AN_INTEGER,
+                                                        "money_operation")
+        return "Error", "Error", "Error"
+    error_mgr = src.Error.ErrorManager.ErrorManager()
+    error_mgr.clear_error()
+
+    bot = src.PereBlaiseBot.PereBlaiseBot()
+    bot.character_db_handler.initialize = Mock()
+    bot.character_db_handler.money_operation = Mock(side_effect=add_error)
+
+    message = discord.Message(reactions=[])
+    message.channel = "123456789"
+    message.author.id = src.PereBlaiseBot.MJ_ID
+
+    returned_msgs = []
+    message.content = "pb MJbouRse toto 15/12/23"
+
+    bot.handle_gm_money_operation(message.content.split(" ")[1:], message, returned_msgs)
+    assert len(returned_msgs) == 0
+    assert bot.character_db_handler.money_operation.call_args_list == [call(None, '15/12/23')]
+    assert bot.character_db_handler.initialize.call_args_list == [call()]
