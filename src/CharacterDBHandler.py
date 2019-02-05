@@ -7,7 +7,7 @@ from .Error.ErrorManager import ErrorManager, ErrorCode
 class Character:
 
     def __init__(self):
-        self.userName = None
+        self.user_name = None
         self.name = None
         self.job = None
         self.ev = None
@@ -21,11 +21,11 @@ class Character:
         self.force = None
         self.attaque = None
         self.parade = None
-        self.pointsDeDestin = None
+        self.points_destin = None
         self.competences = []
-        self.piecesOr = None
-        self.piecesArgent = None
-        self.piecesBronze = None
+        self.pieces_or = None
+        self.pieces_argent = None
+        self.pieces_bronze = None
         self.niveau = None
         self.sexe = None
         self.experience = None
@@ -100,7 +100,7 @@ class CharacterDBHandler:
     def import_character(self, user_name):
         values = self.db_handler.read_file_for_character(user_name)
         new_character = Character()
-        new_character.userName = values["PLAYER"]
+        new_character.user_name = values["PLAYER"]
         new_character.name = values["NAME"]
         new_character.race = values["RACE"]
         new_character.job = values["JOB"]
@@ -115,11 +115,11 @@ class CharacterDBHandler:
         new_character.force = values["FO"]
         new_character.attaque = values["AT"]
         new_character.parade = values["PRD"]
-        new_character.pointsDeDestin = values["DESTINY"]
+        new_character.points_destin = values["DESTINY"]
         new_character.competences = values["SKILLS"]
-        new_character.piecesOr = values["GOLD"]
-        new_character.piecesArgent = values["SILVER"]
-        new_character.piecesBronze = values["BRONZE"]
+        new_character.pieces_or = values["GOLD"]
+        new_character.pieces_argent = values["SILVER"]
+        new_character.pieces_bronze = values["BRONZE"]
         new_character.niveau = values["LEVEL"]
         new_character.sexe = values["SEX"]
         new_character.experience = values["XP"]
@@ -147,11 +147,11 @@ class CharacterDBHandler:
                                         self.DisplayItem(self.format_gauge(character.ea,
                                                                            character.ea_max),
                                                          self.mapping["EA"]),
-                                        self.DisplayItem(character.pointsDeDestin,
+                                        self.DisplayItem(character.points_destin,
                                                          self.mapping["DESTINY"]),
-                                        self.DisplayItem(self.format_money(character.piecesOr,
-                                                                           character.piecesArgent,
-                                                                           character.piecesBronze),
+                                        self.DisplayItem(self.format_money(character.pieces_or,
+                                                                           character.pieces_argent,
+                                                                           character.pieces_bronze),
                                                          self.mapping["GOLD"]),
                                         self.DisplayItem(character.attaque,
                                                          self.mapping["AT"]),
@@ -170,9 +170,9 @@ class CharacterDBHandler:
 
     def display_money_infos(self, character, display_name=False):
         return self.display_list_infos(0x00ff00,
-                                       [self.DisplayItem(self.format_money(character.piecesOr,
-                                                                           character.piecesArgent,
-                                                                           character.piecesBronze),
+                                       [self.DisplayItem(self.format_money(character.pieces_or,
+                                                                           character.pieces_argent,
+                                                                           character.pieces_bronze),
                                                          self.mapping["GOLD"])],
                                        (character.name if display_name else None))
 

@@ -72,13 +72,13 @@ def test_import_character():
     assert character.name == "Chuck Norris"
     assert character.niveau == 2
     assert character.parade == 19
-    assert character.piecesArgent == 23
-    assert character.piecesBronze == 14
-    assert character.piecesOr == 152
-    assert character.pointsDeDestin == 2
+    assert character.pieces_argent == 23
+    assert character.pieces_bronze == 14
+    assert character.pieces_or == 152
+    assert character.points_destin == 2
     assert character.sexe == "Homme"
     assert character.stuff == ["Rope", "Potion"]
-    assert character.userName == "123456789"
+    assert character.user_name == "123456789"
     assert character.weapons == ["Left fist", "Right fist"]
     assert (len(src.Error.ErrorManager.ErrorManager.error_log) == 0)
 

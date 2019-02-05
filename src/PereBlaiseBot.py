@@ -1,37 +1,38 @@
 import discord
 import random
 import re
+import unidecode
 
 from .CharacterDBHandler import CharacterDBHandler
 from .Settings import SettingsHandler
-from src.Database.DbHandler import DbHandler
+from .Database.DbHandler import DbHandler
+from .Error.ErrorManager import ErrorManager, ErrorCode
 
-HELP_CHANNEL = '387149097037070346'
 MJ_CHANNEL = '411248354534752256'
 MJ_ID = '294164488427405312'
 
 
 class DiscordMessage:
-    discordChannel = None
-    strMessage = None
-    embedMessage = None
+    discord_channel = None
+    str_msg = None
+    embed_msg = None
 
     def __init__(self, discord_channel, content=None, embed=None):
-        self.discordChannel = discord_channel
-        self.strMessage = content
-        self.embedMessage = embed
+        self.discord_channel = discord_channel
+        self.str_msg = content
+        self.embed_msg = embed
 
 
 class PereBlaiseBot:
-    def check_args(self, message, nb_args, help_message):
+    def __init__(self):
+        self.character_db_handler = CharacterDBHandler()
+        self.db_handler = DbHandler()
+        self.settings_handler = SettingsHandler()
+
+    def check_args(self, message, nb_args, syntax_msg):
         array_args = message.split(" ")
         if len(array_args) < nb_args:
-            embed = discord.Embed(color=0xff0000)
-            embed.add_field(
-                name="Erreur",
-                value=help_message,
-                inline=True)
-            return embed
+            ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "check_args", [syntax_msg])
 
     def get_user(self, args, message, index_user):
         user_id = None
@@ -49,13 +50,13 @@ class PereBlaiseBot:
             user_id = args[2:-1]
         return user_id
 
-    def get_user_value(self, message):
+    def get_user_value(self, message, user_idx=2, value_idx=3):
         array_args = message.split(" ")
-        return self.extract_id(array_args[2]), int(array_args[3])
+        return self.extract_id(array_args[user_idx]), int(array_args[value_idx])
 
-    def get_value(self, message):
+    def get_value(self, message, idx=2):
         array_args = message.split(" ")
-        return int(array_args[2])
+        return int(array_args[idx])
 
     def get_user_value_str(self, message):
         array_args = message.split(" ")
@@ -65,45 +66,49 @@ class PereBlaiseBot:
         array_args = message.split(" ")
         return array_args[2]
 
-    def make_time_operation(self, delta_min, message, settings, embed):
+    def make_time_operation(self, delta_min, message, embed):
         result = False
-        if message.author.id == MJ_ID:
-            delta = 0
-            try:
-                delta = int(delta_min)
-            except ValueError:
-                print("Not an integer")
-                return
-            if delta > 0:
-                current_time = settings.add_time(delta)
-                result = True
-                embed.add_field(
-                    name="Temps ajouté",
-                    value="<@" + message.author.id + "> a demandé l'ajout de " + delta_min +
-                          " minutes.\nNous sommes donc maintenant le " +
-                          current_time.strftime("%d/%m/%Y") + " à " + current_time.strftime("%H:%M") + ".",
-                    inline=False)
+        if message.author.id != MJ_ID:
+            ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY, "make_time_operation")
+            return result
+        delta = 0
+        try:
+            delta = int(delta_min)
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "make_time_operation")
+            return result
+        if delta <= 0:
+            ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "make_time_operation")
+            return result
+        current_time = self.settings_handler.add_time(delta)
+        result = True
+        embed.add_field(
+            name="Temps ajouté",
+            value="<@" + message.author.id + "> a demandé l'ajout de " + delta_min +
+                  " minutes.\nNous sommes donc maintenant le " +
+                  current_time.strftime("%d/%m/%Y") + " à " + current_time.strftime("%H:%M") + ".",
+            inline=False)
         return result
 
     def apply_heal(self, embed, user, value):
-        character_db = CharacterDBHandler()
-        character_db.initialize()
-        remaining_life = character_db.increase_ev(user, value)
+        self.character_db_handler.initialize()
+        remaining_life = self.character_db_handler.increase_ev(user, value)
         embed.add_field(
-            name="Soin enregistrée",
+            name="Soin enregistré",
             value="Le joueur <@" + user + "> a soigné " + str(
                 value) + " points de vie.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
+        return embed
 
     def apply_injury(self, embed, user, value):
-        character_db = CharacterDBHandler()
-        character_db.initialize()
-        remaining_life = character_db.decrease_ev(user, value)
+        self.character_db_handler.initialize()
+        remaining_life = self.character_db_handler.decrease_ev(user, value)
         embed.add_field(
             name="Blessure enregistrée",
-            value="Le joueur <@" + user + "> a recu " + str(
+            value="Le joueur <@" + user + "> a reçu " + str(
                 value) + " points de dégats.\nIl reste " + remaining_life + " points de vie.",
             inline=False)
+        return embed
 
     def roll(self, dice_cmd):
         final_result = ''
@@ -114,35 +119,63 @@ class PereBlaiseBot:
             threshold = None
             if len(comparison) > 1:
                 threshold = int(comparison[1])
-            operations = comparison[0].split('+')
+            operations = re.split('[+,-]', comparison[0])
             str_display = comparison[0] + '='
             for operation in operations:
-                if ('D' in operation) or ('d' in operation):
-                    operands = re.split('[D,d]', operation)
-                    if len(operands) == 2:
-                        str_display += '('
-                        occurrence = int(operands[0])
-                        dice_type = int(operands[1])
-                        for x in range(0, occurrence):
-                            value = random.randint(1, dice_type)
-                            str_display += (str(value) + '+')
-                            result += value
-                        str_display = str_display[:-1]
-                        str_display += ')'
-                else:
-                    str_display += operation
-                    result += int(operation)
+                result, str_display = self.compute_and_display_single_operation(operation, result, str_display)
                 str_display += '+'
             str_display = str_display[:-1]
             str_display += ('='+str(result))
-            if threshold is not None:
-                str_display += ('<'+str(threshold))
-                if result < threshold:
-                    str_display += ' --> Reussite'
-                else:
-                    str_display += ' --> Echec'
+            str_display = self.display_result_status(result, str_display, threshold)
             final_result += str_display+'\n'
         return final_result[:-1]
+
+    def display_result_status(self, result, str_display, threshold):
+        if threshold is not None:
+            str_display += ('<' + str(threshold))
+            if result < threshold:
+                str_display += ' --> Reussite'
+            else:
+                str_display += ' --> Echec'
+        return str_display
+
+    def compute_and_display_single_operation(self, operation, result, str_display):
+        if ('D' in operation) or ('d' in operation):
+            operands = re.split('[D,d]', operation)
+            if len(operands) == 2:
+                str_display += '('
+                result, str_display = self.throw_dices(operands[0], operands[1], result, str_display)
+                if result is not None:
+                    str_display = str_display[:-1]
+                    str_display += ')'
+            else:
+                ErrorManager().add_error(ErrorCode.INVALID_SYNTAX, "compute_and_display_single_operation", ["[0-9]*[d,D][0-9]*"])
+                return None, ""
+        else:
+            try:
+                str_display += operation
+                result += int(operation)
+            except ValueError:
+                ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "throw_dices")
+                return None, ""
+        return result, str_display
+
+    def throw_dices(self, occurrence, dice_type, result, str_display):
+        try:
+            occurrence = int(occurrence)
+            dice_type = int(dice_type)
+        except ValueError:
+            ErrorManager().add_error(ErrorCode.NOT_AN_INTEGER, "throw_dices")
+            return None, ""
+        if occurrence <= 0 or dice_type <= 0:
+            ErrorManager().add_error(ErrorCode.NOT_A_POSITIVE_INTEGER, "throw_dices")
+            return None, ""
+
+        for x in range(0, occurrence):
+            value = random.randint(1, dice_type)
+            str_display += (str(value) + '+')
+            result = None if result is None else (result + value)
+        return result, str_display
 
     def represents_int(self, s):
         try:
@@ -151,252 +184,309 @@ class PereBlaiseBot:
         except ValueError:
             return False
 
+
+    ### Command Interpretation part ###
     def handle_insults(self, message):
-        if "blaise" in message.content.lower() and\
-                ("fuck" in message.content.lower() or
-                 "encul" in message.content.lower() or
-                 "salop" in message.content.lower() or
-                 "con" in message.content.lower() or
-                 "batard" in message.content.lower() or
-                 ("ass" in message.content.lower() and
-                  "hole" in message.content.lower())):
+        lowered_msg = unidecode.unidecode(message.lower())
+        if "blaise" in lowered_msg and\
+                ("fuck" in lowered_msg or
+                 "encul" in lowered_msg or
+                 "salop" in lowered_msg or
+                 "con" in lowered_msg or
+                 "batard" in lowered_msg or
+                 ("ass" in lowered_msg and
+                  "hole" in lowered_msg)):
             gif = ["https://giphy.com/gifs/gtfo-denzel-washington-shut-the-door-l0HlMSVVw9zqmClLq",
                    "https://giphy.com/gifs/QGzPdYCcBbbZm",
                    "https://giphy.com/gifs/highqualitygifs-s03-e11-cee7A1jKXPDZ6",
                    "https://giphy.com/gifs/rupaulsdragraces5-rupauls-drag-race-rupaul-season-5-26tnoxLPelh9nzzPy",
                    "https://giphy.com/gifs/3d-c4d-cinema-4d-vII0XI8RqUVMY"]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("pisse" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("pisse" in lowered_msg):
             gif = ["https://giphy.com/gifs/tisha-campbell-nicole-ari-parker-real-husbands-of-hollywood-cIhprQfD0SDOo"]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("bite" in message.content.lower() or
-                 "dick" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("bite" in lowered_msg or
+                 "dick" in lowered_msg):
             gif = ["https://giphy.com/gifs/work-adult-safe-XH6dfMa0cLzYA "]
             return True, gif
-        elif "blaise" in message.content.lower() and\
-                ("whore" in message.content.lower() or
-                 "pute" in message.content.lower()):
+        elif "blaise" in lowered_msg and\
+                ("whore" in lowered_msg or
+                 "pute" in lowered_msg):
             gif = ["https://giphy.com/gifs/realitytvgifs-fuck-you-boo-VGNc4ynYaSzy8 "]
             return True, gif
         else:
             return False, []
 
-    def on_message(self, message):
-        returned_msgs = []
-        result_insult, gif = self.handle_insults(message)
-        if result_insult:
-            return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
-        elif message.content.startswith('pereBlaise') or\
-                message.content.startswith('PereBlaise') or\
-                message.content.startswith('PèreBlaise') or\
-                message.content.startswith('pèreBlaise') or\
-                message.content.startswith('pB') or\
-                message.content.startswith('PB') or\
-                message.content.startswith('pb') or\
-                message.content.startswith('Pb'):
-            args = message.content.split(" ")
-            if self.represents_int(args[1]):
-                change = int(args[1])
+    def detect_command_keyword(self, message):
+        message = unidecode.unidecode(message).lower()
+        return message.startswith('pereblaise') or \
+            message.startswith('pb')
+
+    def handle_life_operations(self, parsed_command, message, returned_msgs):
+        if self.represents_int(parsed_command[0]):
+            change = int(parsed_command[0])
+            embed = discord.Embed(color=0x00ff00)
+            if change > 0:
+                self.apply_heal(embed, message.author.id, change)
+            else:
+                self.apply_injury(embed, message.author.id, (0 - change))
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_welcome(self, args, message, returned_msgs):
+        if unidecode.unidecode(args[0]) == 'hi':
+            embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def display_error(self, returned_msg, channel):
+        for an_error in ErrorManager.error_log:
+            embed = discord.Embed(color=0xff0000)
+            embed.add_field(
+                name="Erreur",
+                value=an_error,
+                inline=True)
+            returned_msg.append(DiscordMessage(channel, embed=embed))
+
+    def handle_gm_injury(self, args, message, returned_msgs):
+        syntax_msg = "!pereBlaise MJblessure <pseudo> <valeur>"
+        #Decoding
+        if args[0] == 'MJblessure':
+            embed = None
+            self.check_args(message.content, 4, syntax_msg)
+
+        #Check
+            if message.author.id == MJ_ID:
+                user, value = self.get_user_value(message.content, 2, 3)
+                print(str(user)+" "+str(value))
                 embed = discord.Embed(color=0x00ff00)
-                if change > 0:
-                    self.apply_heal(embed, message.author.id, change)
-                else:
-                    self.apply_injury(embed, message.author.id, (0 - change))
+                self.apply_injury(embed, user, value)
+            else:
+                ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY,
+                                         "handle_gm_injury")
+
+        #display
+            if len(ErrorManager.error_log) > 0:
+                self.display_error(returned_msgs, message.channel)
+            if embed is not None:
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
-            elif args[1] == 'hi':
-                embed = discord.Embed(description="I am pleased to welcome in this area !", color=0x00ff00)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                print(message.channel.id)
+    def handle_gm_heal(self, args, message, returned_msgs):
+        syntax_msg = "pereBlaise MJsoin <pseudo> <valeur>"
+        if args[0] == 'MJsoin':
+            embed = None
+            self.check_args(message.content, 4, syntax_msg)
+            if message.author.id == MJ_ID:
+                user, value = self.get_user_value(message.content, 2, 3)
+                embed = discord.Embed(color=0x00ff00)
+                self.apply_heal(embed, user, value)
+            else:
+                ErrorManager().add_error(ErrorCode.GM_COMMAND_ONLY,
+                                         "handle_gm_heal")
 
-            elif args[1] == 'MJblessure':
-                embed_result = self.check_args(message.content,
-                                               4,
-                                               "Syntaxe: '!pereBlaise MJblessure <pseudo> <valeur>'")
-                if embed_result is None and message.author.id == MJ_ID:
-                    user, value = self.get_user_value(message.content)
-                    embed = discord.Embed(color=0x00ff00)
-                    self.apply_injury(embed, user, value)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                else:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'MJsoin':
-                embed_result = self.check_args(message.content,
-                                               4,
-                                               "Syntaxe: '!pereBlaise MJsoin <pseudo> <valeur>'")
-                if embed_result is None and message.author.name == "nogebour":
-                    user, value = self.get_user_value(message.content)
-                    embed = discord.Embed(color=0x00ff00)
-                    self.apply_heal(embed, user, value)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                else:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'blessure':
-                embed_result = self.check_args(message.content,
-                                               3,
-                                               "Syntaxe: '!pereBlaise blessure <valeur>'")
-                if embed_result is None:
-                    value = self.get_value(message.content)
-                    embed = discord.Embed(color=0x00ff00)
-                    self.apply_injury(embed, message.author.id, value)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                else:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'soin' or args[1] == 'soins':
-                embed_result = self.check_args(message.content, 3, "Syntaxe: '!pereBlaise soin <valeur>'")
-                if embed_result is None:
-                    value = self.get_value(message.content)
-                    embed = discord.Embed(color=0x00ff00)
-                    self.apply_heal(embed, message.author.id, value)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-                else:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'liste' and (args[2] == "armes" or args[2] == "arme"):
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embeds = db_handler.display_weapons_character(db_handler.import_character(message.author.id))
-                for anEmbed in embeds:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=anEmbed))
-
-            elif args[1] == 'liste' and args[2] == "stuff":
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embeds = db_handler.display_stuff_character(db_handler.import_character(message.author.id))
-                for anEmbed in embeds:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=anEmbed))
-
-            elif args[1] == 'liste' and (args[2] == "skill" or args[2] == "skills"):
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embeds = db_handler.display_skills_character(db_handler.import_character(message.author.id))
-                for anEmbed in embeds:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=anEmbed))
-
-            elif args[1] == 'info':
-                usr_id = message.author.id
-                if len(args) > 2:
-                    tmp_usr_id = self.extract_id(args[2])
-                    if tmp_usr_id is not None:
-                        usr_id = tmp_usr_id
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embeds = db_handler.display_minimum_info_character(db_handler.import_character(usr_id))
-                for anEmbed in embeds:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=anEmbed))
-
-            elif args[1] == 'full' and (args[2] == 'info' or args[2] == 'infos'):
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embeds = db_handler.display_info_character(db_handler.import_character(message.author.id))
-                for anEmbed in embeds:
-                    returned_msgs.append(DiscordMessage(message.channel, embed=anEmbed))
-
-            elif args[1] == 'bourse' and len(args) == 2:
-                db_handler = CharacterDBHandler()
-                db_handler.initialize()
-                embed = db_handler.display_money_infos(db_handler.import_character(message.author.id))
+            if len(ErrorManager.error_log) > 0:
+                self.display_error(returned_msgs, message.channel)
+            if embed is not None:
                 returned_msgs.append(DiscordMessage(message.channel, embed=embed))
 
-            elif args[1] == 'bourse':
-                embed_result = self.check_args(message.content,
-                                               3,
-                                               "Syntaxe: '!pereBlaise bourse <or>/<argent>/<bronze>'")
-                if embed_result is None:
-                    value = self.get_value_str(message.content)
-                    db_handler = CharacterDBHandler()
-                    db_handler.initialize()
-                    gold, silver, bronze = db_handler.money_operation(message.author.id, value)
+    def handle_injury(self, args, message, returned_msgs):
+        syntax_msg = "pereBlaise blessure <valeur>"
+        if args[0].startswith("blessure"):
+            self.check_args(message.content, 3, syntax_msg)
+
+            value = self.get_value(message.content)
+            embed = self.apply_injury(discord.Embed(color=0x00ff00), message.author.id, value)
+
+            if len(ErrorManager.error_log) > 0:
+                self.display_error(returned_msgs, message.channel)
+
+            if embed is not None:
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_heal(self, args, message, returned_msgs):
+        syntax_msg = "pereBlaise soin <valeur>"
+        if args[0].startswith("soin"):
+            self.check_args(message.content, 2, syntax_msg)
+
+            value = self.get_value(message.content)
+            embed = self.apply_heal(discord.Embed(color=0x00ff00), message.author.id, value)
+
+            if len(ErrorManager.error_log) > 0:
+                self.display_error(returned_msgs, message.channel)
+
+            if embed is not None:
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_roll(self, args, message, returned_msgs):
+        if args[0].lower() == "roll" and len(args) > 2:
+            returned_msgs.append(DiscordMessage(message.channel,
+                                                content=("<@" + message.author.id + ">\n" +
+                                                         self.roll(''.join(args[2:])))))
+
+    def handle_save(self, args, message, returned_msgs):
+        if args[0].lower() == "save" and message.author.id == MJ_ID:
+                self.db_handler.retrieve_game()
+                self.db_handler.save_snapshot_game()
+                returned_msgs.append(DiscordMessage(message.channel, content="Game saved"))
+
+    def handle_time_walk_rest(self, args, message, returned_msgs):
+        if args[0].lower() == "temps" and len(args) == 4 and (args[1].lower() == "repos" or args[1].lower() == "marche"):
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            if self.make_time_operation(args[3], message, embed):
+                if args[1].lower() == 'repos':
+                    self.settings_handler.handle_rest(args[2], args[3], embed)
+                else:
+                    self.settings_handler.handle_walk(args[2], args[3], embed)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_time_operation(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temp") and len(args) == 2:
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            if self.make_time_operation(args[1], message, embed):
+                self.settings_handler.save_settings()
+                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_time_start_game(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temp") and args[1].lower() == "passe" and len(args) == 2:
+            self.settings_handler.initialize()
+            delta = self.settings_handler.get_elapsed_time()
+            embed = discord.Embed(color=0x00ff00)
+            embed.add_field(
+                name="Durée de l'aventure",
+                value=("Pour information l'aventure à commencé depuis " +
+                       str(delta)).replace("day", "jour"),
+                inline=False)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+
+    def handle_time(self, args, message, returned_msgs):
+        if args[0].lower().startswith("temps") and len(args) == 1:
+            self.settings_handler.initialize()
+            embed = discord.Embed(color=0x00ff00)
+            embed.add_field(
+                name="Heure du jeu",
+                value="<@" + message.author.id + "> a demandé la date et on est le " +
+                      self.settings_handler.current_time.strftime("%d/%m/%Y") +
+                      " à " +
+                      self.settings_handler.current_time.strftime("%H:%M") + ".",
+                inline=False)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_gm_money_operation(self, args, message, returned_msgs):
+        if args[0].lower() == 'mjbourse':
+            syntax_msg = "pereBlaise MJbourse <user> <or>/<argent>/<bronze>"
+            self.check_args(message.content, 4, syntax_msg)
+            if len(ErrorManager.error_log) == 0:
+                user, value = self.get_user_value_str(message.content)
+                self.character_db_handler.initialize()
+                gold, silver, bronze = self.character_db_handler.money_operation(user, value)
+                if len(ErrorManager.error_log) == 0:
                     embed_result = discord.Embed(color=0x00ff00)
                     embed_result.add_field(
                         name="Operations comptables enregistrés",
-                        value="<@" + MJ_ID + ">: Le joueur <@" + message.author.id + "> a maintenant " +
-                              str(gold)+" PO, " +
-                              str(silver)+" PA et " +
-                              str(bronze)+" PB.",
-                        inline=False)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
-
-            elif args[1] == 'MJbourse':
-                embed_result = self.check_args(message.content,
-                                               4,
-                                               "Syntaxe: '!pereBlaise MJbourse <user> <or>/<argent>/<bronze>'")
-                if embed_result is None:
-                    user, value = self.get_user_value_str(message.content)
-                    db_handler = CharacterDBHandler()
-                    db_handler.initialize()
-                    gold, silver, bronze = db_handler.money_operation(user, value)
-                    embed_result = discord.Embed(color=0x00ff00)
-                    embed_result.add_field(
-                        name="Operations comptables enregistrés",
-                        value="<@" + MJ_ID + ">: Le joueur <@" + user + "> a maintenant " + str(gold) +
+                        value="<@" + MJ_ID + ">: " +
+                              "Le joueur <@" + user + "> a maintenant " + str(gold) +
                               " PO, " + str(silver) + " PA et " + str(bronze) + " PB.",
                         inline=False)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
+                    returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
 
-            elif args[1] == "temps" and len(args) == 2:
-                settings = SettingsHandler()
-                settings.initialize()
-                embed = discord.Embed(color=0x00ff00)
-                embed.add_field(
-                    name="Heure du jeu",
-                    value="<@"+message.author.id+"> a demandé la date et on est le " +
-                          settings.current_time.strftime("%d/%m/%Y") +
-                          " à " +
-                          settings.current_time.strftime("%H:%M")+".",
-                    inline=False)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-
-            elif args[1] == "temps" and args[2] == "passe" and len(args) == 3:
-                settings = SettingsHandler()
-                settings.initialize()
-                delta = settings.get_elapsed_time()
-                embed = discord.Embed(color=0x00ff00)
-                embed.add_field(
-                    name="Durée de l'aventure",
-                    value=("Pour information l'aventure à commencé depuis " +
-                           str(delta)).replace("day", "jour"),
-                    inline=False)
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-
-            elif args[1] == "temps" and len(args) == 3:
-                settings = SettingsHandler()
-                settings.initialize()
-                embed = discord.Embed(color=0x00ff00)
-                if self.make_time_operation(args[2], message, settings, embed):
-                    settings.save_settings()
-                returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-
-            elif args[1] == "temps" and len(args) == 5:
-                if args[2] == "repos" or args[2] == "marche":
-                    settings = SettingsHandler()
-                    settings.initialize()
-                    embed = discord.Embed(color=0x00ff00)
-                    if self.make_time_operation(args[4], message, settings, embed):
-                        if args[2] == 'repos':
-                            print("repos")
-                            settings.handle_rest(args[3], args[4], embed)
-                        elif args[2] == 'marche':
-                            print("Marche")
-                            settings.handle_walk(args[3], args[4], embed)
-                    returned_msgs.append(DiscordMessage(message.channel, embed=embed))
-            elif args[1] == "save":
-                if message.author.id == MJ_ID:
-                    db_handler = DbHandler()
-                    db_handler.retrieve_game()
-                    db_handler.save_snapshot_game()
-            elif args[1].lower() == "roll" and len(args) > 2:
-                returned_msgs.append(DiscordMessage(message.channel,
-                                                    content=("<@"+message.author.id+">\n" +
-                                                             self.roll(''.join(args[2:])))))
-            else:
-                returned_msgs.append(DiscordMessage(message.channel,
-                                                    content=("Hello jeune aventurier!\n"
-                                                             "Je ne te comprends pas."
-                                                             " Va donc voir le channel <#"+HELP_CHANNEL+">")))
+    def on_message(self, message):
+        returned_msgs = []
+        result_insult, gif = self.handle_insults(message.content)
+        if result_insult:
+            return [DiscordMessage(message.channel, content=gif[random.randint(0, len(gif)-1)])]
+        elif self.detect_command_keyword(message.content):
+            args = message.content.split(" ")
+            self.handle_life_operations(args.pop(0), message, returned_msgs)
+            self.handle_welcome(args.pop(0), message, returned_msgs)
+            self.handle_gm_injury(args.pop(0), message, returned_msgs)
+            self.handle_gm_heal(args.pop(0), message, returned_msgs)
+            self.handle_injury(args.pop(0), message, returned_msgs)
+            self.handle_list_weapons(args, message, returned_msgs)
+            self.handle_list_stuff(args, message, returned_msgs)
+            self.handle_list_skills(args, message, returned_msgs)
+            self.handle_info(args, message, returned_msgs)
+            self.handle_full_info(args, message, returned_msgs)
+            self.handle_money(args, message, returned_msgs)
+            self.handle_money_operation(args, message, returned_msgs)
+            self.handle_gm_money_operation(args, message, returned_msgs)
+            self.handle_time(args.pop(0), message, returned_msgs)
+            self.handle_time_start_game(args.pop(0), message, returned_msgs)
+            self.handle_time_operation(args.pop(0), message, returned_msgs)
+            self.handle_time_walk_rest(args.pop(0), message, returned_msgs)
+            self.handle_save(args.pop(0), message)
+            self.handle_roll(args.pop(0), message, returned_msgs)
+        ErrorManager().clear_error()
         return returned_msgs
+
+    def handle_money_operation(self, args, message, returned_msgs):
+        if args[1] == 'bourse':
+            syntax_msg = "pereBlaise bourse <or>/<argent>/<bronze>"
+            self.check_args(message.content, 3, syntax_msg)
+            value = self.get_value_str(message.content)
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            gold, silver, bronze = db_handler.money_operation(message.author.id, value)
+            embed_result = discord.Embed(color=0x00ff00)
+            embed_result.add_field(
+                name="Operations comptables enregistrés",
+                value="<@" + MJ_ID + ">: Le joueur <@" + message.author.id + "> a maintenant " +
+                      str(gold) + " PO, " +
+                      str(silver) + " PA et " +
+                      str(bronze) + " PB.",
+                inline=False)
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed_result))
+
+    def handle_money(self, args, message, returned_msgs):
+        if args[1] == 'bourse' and len(args) == 2:
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embed = db_handler.display_money_infos(db_handler.import_character(message.author.id))
+            returned_msgs.append(DiscordMessage(message.channel, embed=embed))
+
+    def handle_full_info(self, args, message, returned_msgs):
+        if args[1] == 'full' and (args[2] == 'info' or args[2] == 'infos'):
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embeds = db_handler.display_info_character(db_handler.import_character(message.author.id))
+            for an_embed in embeds:
+                returned_msgs.append(DiscordMessage(message.channel, embed=an_embed))
+
+    def handle_info(self, args, message, returned_msgs):
+        if args[1] == 'info':
+            usr_id = message.author.id
+            if len(args) > 2:
+                tmp_usr_id = self.extract_id(args[2])
+                if tmp_usr_id is not None:
+                    usr_id = tmp_usr_id
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embeds = db_handler.display_minimum_info_character(db_handler.import_character(usr_id))
+            for an_embed in embeds:
+                returned_msgs.append(DiscordMessage(message.channel, embed=an_embed))
+
+    def handle_list_skills(self, args, message, returned_msgs):
+        if args[1] == 'liste' and (args[2] == "skill" or args[2] == "skills"):
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embeds = db_handler.display_skills_character(db_handler.import_character(message.author.id))
+            for an_embed in embeds:
+                returned_msgs.append(DiscordMessage(message.channel, embed=an_embed))
+
+    def handle_list_stuff(self, args, message, returned_msgs):
+        if args[1] == 'liste' and args[2] == "stuff":
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embeds = db_handler.display_stuff_character(db_handler.import_character(message.author.id))
+            for an_embed in embeds:
+                returned_msgs.append(DiscordMessage(message.channel, embed=an_embed))
+
+    def handle_list_weapons(self, args, message, returned_msgs):
+        if args[1] == 'liste' and (args[2] == "armes" or args[2] == "arme"):
+            db_handler = CharacterDBHandler()
+            db_handler.initialize()
+            embeds = db_handler.display_weapons_character(db_handler.import_character(message.author.id))
+            for an_embed in embeds:
+                returned_msgs.append(DiscordMessage(message.channel, embed=an_embed))
